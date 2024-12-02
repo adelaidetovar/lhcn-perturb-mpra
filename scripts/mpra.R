@@ -4,26 +4,26 @@
 
 #install.packages("librarian")
 librarian::shelf(tidyverse, factoextra, data.table, mpra, reshape2,
-                 ggtext, UpSetR, patchwork, GGally, ComplexUpset,
+                 ggtext, UpSetR, patchwork, GGally,
                  EnsDb.Hsapiens.v79, locuszoomr, ensembldb, Biostrings,
                  ggrepel, gkmSVM, rstatix, ggpubr, scales, BSgenome.Hsapiens.UCSC.hg38,
-                 chromVARmotifs, ggh4x)
+                 chromVARmotifs, ggh4x, memes)
 
 #####################################
 ### Functions for processing data ###
 #####################################
 
 filtActive <- function(res){
-  res %>% dplyr::filter(adj.P.Val < 0.05) %>% dplyr::select(refname)
+  res %>% dplyr::filter(adj.P.Val < 0.05) %>% dplyr::select(new_refname)
 }
 
 filtNonActive <- function(res){
-  res %>% dplyr::filter(adj.P.Val > 0.05) %>% dplyr::select(refname)
+  res %>% dplyr::filter(adj.P.Val > 0.05) %>% dplyr::select(new_refname)
 }
 
 processPairs = function(df) {
   df %>%
-    extract(refname, into = c("refname", "prom"), "(.*)_([^_]+)$") %>%
+    extract(new_refname, into = c("refname", "prom"), "(.*)_([^_]+)$") %>%
     separate(refname, into = c("rsid", "chr", "pos", "ref", "alt",
                                "allele", "class", "site"),
              sep = "_", remove = FALSE) %>%
@@ -167,22 +167,22 @@ mpra_pca <- ggplot(pca_res_df, aes(PC1, PC2, color = condition, label=label, sha
   xlab(paste0("PC1: ",pct_var_pca[1],"% variance")) +
   ylab(paste0("PC2: ",pct_var_pca[2],"% variance")) + 
   scale_color_manual(values = c("#ff595e","#ffca3a","#8ac926","#1982c4")) +
-  geom_text_repel(min.segment.length = 0, family = "Helvetica",
-                  box.padding = 1.5, size = 5, lineheight = 1,
+  geom_text_repel(min.segment.length = 0, nudge_y = 0.5, family = "Helvetica",
+                  box.padding = 1.5, size = 4, lineheight = 1,
                   data = pca_res_df[c(1:4),], color = "black") + 
   geom_text_repel(min.segment.length = 0, family = "Helvetica",
-                  box.padding = 1.5, nudge_y = -0.05, size = 5, lineheight = 1,
+                  box.padding = 1.5, nudge_y = -0.1, nudge_x = -0.1, size = 4, lineheight = 1,
                   data = pca_res_df[c(5:8),], color = "black") +
   geom_text_repel(min.segment.length = 0, family = "Helvetica",
-                  box.padding = 1.5, nudge_y = -0.1, nudge_x = -0.05, size = 5, lineheight = 1,
+                  box.padding = 1.5, nudge_y = -0.1, nudge_x = -0.1, size = 4, lineheight = 1,
                   data = pca_res_df[c(9:12),], color = "black") +
   geom_text_repel(min.segment.length = 0, family = "Helvetica",
-                  box.padding = 1.5, nudge_x = -0.05, size = 5, lineheight = 1,
+                  box.padding = 1.5, nudge_x = -0.05, nudge_y = 0.05, size = 4, lineheight = 1,
                   data = pca_res_df[c(13:16),], color = "black") +
-  theme_bw(base_family = "Helvetica", base_size = 16) + theme(aspect.ratio = 1, legend.position="none")
+  theme_bw(base_family = "Helvetica", base_size = 14) + theme(legend.position="none")
 
 ggsave(mpra_pca, filename = file.path(fig_dir, "mpra-pca.png"),
-       units = "in", dpi = 600, width = 5, height = 5, device = ragg::agg_png())
+       units = "in", dpi = 600, width = 4, height = 3.2, device = ragg::agg_png())
 
 # do pca for promoters separately
 ## myb
@@ -220,7 +220,7 @@ mpra_myb_pca <- ggplot(pca_res_myb_df, aes(PC1, PC2, color = condition, label=la
                   box.padding = 1.5, nudge_y = -0.05, size = 5, lineheight = 1,
                   data = pca_res_myb_df[c(5:8),], color = "black") +
   geom_text_repel(min.segment.length = 0, family = "Helvetica",
-                  box.padding = 1.5, nudge_y = -0.1, nudge_x = -0.05, size = 5, lineheight = 1,
+                  box.padding = 1.5, nudge_y = -0.4, size = 5, lineheight = 1,
                   data = pca_res_myb_df[c(9:12),], color = "black") +
   geom_text_repel(min.segment.length = 0, family = "Helvetica",
                   box.padding = 1.5, nudge_x = -0.05, size = 5, lineheight = 1,
@@ -262,13 +262,13 @@ mpra_scp_pca <- ggplot(pca_res_scp_df, aes(PC1, PC2, color = condition, label=la
                   box.padding = 1.5, size = 5, lineheight = 1,
                   data = pca_res_scp_df[c(1:4),], color = "black") + 
   geom_text_repel(min.segment.length = 0, family = "Helvetica",
-                  box.padding = 1.5, nudge_y = -0.05, size = 5, lineheight = 1,
+                  box.padding = 1.5, nudge_y = 0.5, size = 5, lineheight = 1,
                   data = pca_res_scp_df[c(5:8),], color = "black") +
   geom_text_repel(min.segment.length = 0, family = "Helvetica",
-                  box.padding = 1.5, nudge_y = -0.35, nudge_x = -0.05, size = 5, lineheight = 1,
+                  box.padding = 1.5, nudge_x = -0.5, size = 5, lineheight = 1,
                   data = pca_res_scp_df[c(9:12),], color = "black") +
   geom_text_repel(min.segment.length = 0, family = "Helvetica",
-                  box.padding = 1.5, nudge_x = -0.05, size = 5, lineheight = 1,
+                  box.padding = 1.5, nudge_y = -1, size = 5, lineheight = 1,
                   data = pca_res_scp_df[c(13:16),], color = "black") +
   theme_bw(base_family = "Helvetica", base_size = 16) + theme(aspect.ratio = 1, legend.position="none")
 
@@ -311,7 +311,7 @@ active_res_undiff <- topTreat(tr_undiff, coef=1, number = Inf) %>%
   rownames_to_column(var = "new_refname")
 
 write.table(active_res_undiff, file.path(out_dir, "active-res-undiff.tsv"),
-            sep = "\t", quote = F)
+            sep = "\t", quote = F, row.names = FALSE)
 # diff group
 mpraset_diff <- MPRASet(DNA = in_dna[,c(5:8)], RNA = in_rna[,c(5:8)], eid = row.names(in_dna))
 diff_fit <- mpralm(object=mpraset_diff, design=design, aggregate="none",
@@ -322,7 +322,7 @@ active_res_diff <- topTreat(tr_diff, coef=1, number = Inf) %>%
   rownames_to_column(var = "new_refname")
 
 write.table(active_res_diff, file.path(out_dir, "active-res-diff.tsv"),
-            sep = "\t", quote = F)
+            sep = "\t", quote = F, row.names = FALSE)
 # AICAR group
 mpraset_aicar <- MPRASet(DNA = in_dna[,c(9:12)], RNA = in_rna[,c(9:12)], eid = row.names(in_dna))
 aicar_fit <- mpralm(object=mpraset_aicar, design=design, aggregate="none",
@@ -333,7 +333,7 @@ active_res_aicar <- topTreat(tr_aicar, coef=1, number = Inf) %>%
   rownames_to_column(var = "new_refname")
 
 write.table(active_res_aicar, file.path(out_dir, "active-res-aicar.tsv"),
-            sep = "\t", quote = F)
+            sep = "\t", quote = F, row.names = FALSE)
 # AICAR group
 mpraset_palm <- MPRASet(DNA = in_dna[,c(13:16)], RNA = in_rna[,c(13:16)], eid = row.names(in_dna))
 palm_fit <- mpralm(object=mpraset_palm, design=design, aggregate="none",
@@ -344,7 +344,7 @@ active_res_palm <- topTreat(tr_palm, coef=1, number = Inf) %>%
   rownames_to_column(var = "new_refname")
 
 write.table(active_res_palm, file.path(out_dir, "active-res-palm.tsv"),
-            sep = "\t", quote = F)
+            sep = "\t", quote = F, row.names = FALSE)
 
 # Filter to active (FDR < 0.05) oligos
 lm_active_undiff = filtActive(active_res_undiff)
@@ -364,299 +364,362 @@ lm_pairs_diff <- processPairs(lm_active_diff)
 lm_pairs_aicar <- processPairs(lm_active_aicar)
 lm_pairs_palm <- processPairs(lm_active_palm)
 
+lm_nonpairs_undiff <- processPairs(lm_nonact_undiff)
+lm_nonpairs_diff <- processPairs(lm_nonact_diff)
+lm_nonpairs_aicar <- processPairs(lm_nonact_aicar)
+lm_nonpairs_palm <- processPairs(lm_nonact_palm)
+
+lm_bck_undiff <- lm_nonpairs_undiff %>%
+  filter(!(rsid %in% lm_pairs_undiff$rsid))
+lm_bck_diff <- lm_nonpairs_diff %>%
+  filter(!(rsid %in% lm_pairs_diff$rsid))
+lm_bck_aicar <- lm_nonpairs_aicar %>%
+  filter(!(rsid %in% lm_pairs_aicar$rsid))
+lm_bck_palm <- lm_nonpairs_palm %>%
+  filter(!(rsid %in% lm_pairs_palm$rsid))
+
+
 ##################################
 ### Make UpSet plot - Activity ###
 ##################################
 
-# Make list of all active rsids from any group
-lm_all_active_rsid = Reduce(union, list(lm_pairs_undiff$new_refname,
-                                        lm_pairs_diff$new_refname,
-                                        lm_pairs_aicar$new_refname,
-                                        lm_pairs_palm$new_refname))
+# Make list of all active fragments from any group
+lm_all_active_rsid = Reduce(union, list(lm_active_undiff$new_refname,
+                                        lm_active_diff$new_refname,
+                                        lm_active_aicar$new_refname,
+                                        lm_active_palm$new_refname))
 
 # Create individual boolean sets for each group
-set_active_undiff = lm_all_active_rsid %in% lm_pairs_undiff$new_refname
-set_active_diff = lm_all_active_rsid %in% lm_pairs_diff$new_refname
-set_active_aicar = lm_all_active_rsid %in% lm_pairs_aicar$new_refname
-set_active_palm = lm_all_active_rsid %in% lm_pairs_palm$new_refname
+set_active_undiff = lm_all_active_rsid %in% lm_active_undiff$new_refname
+set_active_diff = lm_all_active_rsid %in% lm_active_diff$new_refname
+set_active_aicar = lm_all_active_rsid %in% lm_active_aicar$new_refname
+set_active_palm = lm_all_active_rsid %in% lm_active_palm$new_refname
 
 # Make final boolean input df
 active_set = as.data.frame(cbind(set_active_undiff, set_active_diff,
                                  set_active_aicar, set_active_palm))
 rownames(active_set) = lm_all_active_rsid
 
-plot_names <- colnames(active_set) <- c("Undiff + Basal", "Diff + Basal",
+plot_names <- c("Undiff + Basal", "Diff + Basal",
                                         "Diff + AICAR", "Diff + Palmitate")
 
-png(file.path(fig_dir, "upset-active.png"), width = 8, height = 4.5, units = "in",
-    res = 300)
-upset(active_set, plot_names, name = "Intersection",
-      queries = list(
-        upset_query(intersect = "Diff + Palmitate", color = "#1982c4", fill = "#1982c4"),
-        upset_query(intersect = "Diff + AICAR", color = "#8ac926", fill = "#8ac926"),
-        upset_query(intersect = "Diff + Basal", color = "#ffca3a", fill = "#ffca3a"),
-        upset_query(intersect = "Undiff + Basal", color = "#ff595e", fill = "#ff595e"),
-        upset_query(set = "Diff + Palmitate", fill = "#1982c4"),
-        upset_query(set = "Diff + AICAR", fill = "#8ac926"),
-        upset_query(set = "Diff + Basal", fill = "#ffca3a"),
-        upset_query(set = "Undiff + Basal", fill = "#ff595e")
-      ),
-      themes = upset_default_themes(
-        text = element_text(family = "Helvetica", size = 15)
-      ),
-      sort_sets = 'descending',
-      base_annotations = list(
-        'Intersection size' = intersection_size(
-          text = list(size = 5)
-        )
-      )
-)
-dev.off()
-
-###############################################
-### mpralm - Activity (Is an oligo active?)
-### MYBPC2
-###############################################
-
-filt_cts_myb <- filt_cts %>%
-  dplyr::filter(prom == "MYBPC2")
-
-# Separate input DNA and RNA for mpralm formatting purposes
-in_dna <- filt_cts_myb %>%
-  mutate(new_refname = paste(refname, prom, sep = "_")) %>%
-  dplyr::select(starts_with("dna"), new_refname) %>%
-  column_to_rownames(var = "new_refname")
-
-in_rna <- filt_cts_myb %>%
-  mutate(new_refname = paste(refname, prom, sep = "_")) %>%
-  dplyr::select(starts_with("rna"), new_refname) %>%
-  column_to_rownames(var = "new_refname")
-
-colnames(in_dna) <- colnames(in_rna) <- paste0("sample", seq(1,16,by=1))
-
-# Perform activity analysis - basal undiff group
-mpraset_undiff <- MPRASet(DNA = in_dna[,c(1:4)], RNA = in_rna[,c(1:4)], eid = row.names(in_dna))
-design <- model.matrix(~1, data=data.frame(sample=paste0("sample", 1:4)))
-undiff_fit_myb <- mpralm(object=mpraset_undiff, design=design, aggregate="none",
-                         model_type="indep_groups", plot=TRUE)
-
-tr_undiff_myb <- treat(undiff_fit_myb)
-active_res_undiff_myb <- topTreat(tr_undiff_myb, coef=1, number = Inf) %>%
-  rownames_to_column(var = "new_refname")
-
-write.table(active_res_undiff_myb, file.path(out_dir, "active-res-undiff-myb.tsv"),
-            sep = "\t", quote = F)
-# diff group
-mpraset_diff <- MPRASet(DNA = in_dna[,c(5:8)], RNA = in_rna[,c(5:8)], eid = row.names(in_dna))
-diff_fit_myb <- mpralm(object=mpraset_diff, design=design, aggregate="none",
-                       model_type="indep_groups", plot=TRUE)
-
-tr_diff_myb <- treat(diff_fit)
-active_res_diff_myb <- topTreat(tr_diff_myb, coef=1, number = Inf) %>%
-  rownames_to_column(var = "new_refname")
-
-write.table(active_res_diff_myb, file.path(out_dir, "active-res-diff-myb.tsv"),
-            sep = "\t", quote = F)
-# AICAR group
-mpraset_aicar <- MPRASet(DNA = in_dna[,c(9:12)], RNA = in_rna[,c(9:12)], eid = row.names(in_dna))
-aicar_fit_myb <- mpralm(object=mpraset_aicar, design=design, aggregate="none",
-                        model_type="indep_groups", plot=TRUE)
-
-tr_aicar_myb <- treat(aicar_fit_myb)
-active_res_aicar_myb <- topTreat(tr_aicar_myb, coef=1, number = Inf) %>%
-  rownames_to_column(var = "new_refname")
-
-write.table(active_res_aicar_myb, file.path(out_dir, "active-res-aicar-myb.tsv"),
-            sep = "\t", quote = F)
-# AICAR group
-mpraset_palm <- MPRASet(DNA = in_dna[,c(13:16)], RNA = in_rna[,c(13:16)], eid = row.names(in_dna))
-palm_fit_myb <- mpralm(object=mpraset_palm, design=design, aggregate="none",
-                       model_type="indep_groups", plot=TRUE)
-
-tr_palm_myb <- treat(palm_fit_myb)
-active_res_palm_myb <- topTreat(tr_palm_myb, coef=1, number = Inf) %>%
-  rownames_to_column(var = "new_refname")
-
-write.table(active_res_palm_myb, file.path(out_dir, "active-res-palm-myb.tsv"),
-            sep = "\t", quote = F)
-
-# Filter to active (FDR < 0.05) oligos
-lm_active_undiff_myb = filtActive(active_res_undiff_myb)
-lm_active_diff_myb = filtActive(active_res_diff_myb)
-lm_active_aicar_myb = filtActive(active_res_aicar_myb)
-lm_active_palm_myb = filtActive(active_res_palm_myb)
-
-# Filter to oligo allele pairs where at least one allele is active
-lm_pairs_undiff_myb <- processPairs(lm_active_undiff_myb)
-lm_pairs_diff_myb <- processPairs(lm_active_diff_myb)
-lm_pairs_aicar_myb <- processPairs(lm_active_aicar_myb)
-lm_pairs_palm_myb <- processPairs(lm_active_palm_myb)
-
-##################################
-### Make UpSet plot - Activity ###
-##################################
+colnames(active_set) <- c("undiff", "diff", "aicar", "palm")
 
 # Make list of all active rsids from any group
-lm_all_active_rsid_myb = Reduce(union, list(lm_pairs_undiff_myb$new_refname,
-                                            lm_pairs_diff_myb$new_refname,
-                                            lm_pairs_aicar_myb$new_refname,
-                                            lm_pairs_palm_myb$new_refname))
+lm_all_active_pairs = Reduce(union, list(lm_pairs_undiff$new_refname,
+                                        lm_pairs_diff$new_refname,
+                                        lm_pairs_aicar$new_refname,
+                                        lm_pairs_palm$new_refname))
 
 # Create individual boolean sets for each group
-set_active_undiff_myb = lm_all_active_rsid_myb %in% lm_pairs_undiff_myb$new_refname
-set_active_diff_myb = lm_all_active_rsid_myb %in% lm_pairs_diff_myb$new_refname
-set_active_aicar_myb = lm_all_active_rsid_myb %in% lm_pairs_aicar_myb$new_refname
-set_active_palm_myb = lm_all_active_rsid_myb %in% lm_pairs_palm_myb$new_refname
+pairs_active_undiff = lm_all_active_pairs %in% lm_pairs_undiff$new_refname
+pairs_active_diff = lm_all_active_pairs %in% lm_pairs_diff$new_refname
+pairs_active_aicar = lm_all_active_pairs %in% lm_pairs_aicar$new_refname
+pairs_active_palm = lm_all_active_pairs %in% lm_pairs_palm$new_refname
 
 # Make final boolean input df
-active_set_myb = as.data.frame(cbind(set_active_undiff_myb, set_active_diff_myb,
-                                     set_active_aicar_myb, set_active_palm_myb))
+active_pairs = as.data.frame(cbind(pairs_active_undiff, pairs_active_diff,
+                                   pairs_active_aicar, pairs_active_palm))
+rownames(active_pairs) = lm_all_active_pairs
 
+colnames(active_pairs) <- c("undiff", "diff", "aicar", "palm")
 
-plot_names <- colnames(active_set_myb) <- c("Undiff + Basal", "Diff + Basal",
-                                            "Diff + AICAR", "Diff + Palmitate")
+active_set
 
-png(file.path(fig_dir, "upset-active-myb.png"), width = 8, height = 4.5, units = "in",
-    res = 300)
-upset(active_set_myb, plot_names, name = "Intersection",
-      queries = list(
-        upset_query(intersect = "Diff + Palmitate", color = "#1982c4", fill = "#1982c4"),
-        upset_query(intersect = "Diff + AICAR", color = "#8ac926", fill = "#8ac926"),
-        upset_query(intersect = "Diff + Basal", color = "#ffca3a", fill = "#ffca3a"),
-        upset_query(intersect = "Undiff + Basal", color = "#ff595e", fill = "#ff595e"),
-        upset_query(set = "Diff + Palmitate", fill = "#1982c4"),
-        upset_query(set = "Diff + AICAR", fill = "#8ac926"),
-        upset_query(set = "Diff + Basal", fill = "#ffca3a"),
-        upset_query(set = "Undiff + Basal", fill = "#ff595e")
-      ),
-      themes = upset_default_themes(
-        text = element_text(family = "Helvetica", size = 15)
-      ),
-      sort_sets = 'descending',
-      base_annotations = list(
-        'Intersection size' = intersection_size(
-          text = list(size = 5)
-        )
-      )
+# df for intersections
+# - # fragments active in each set by promoter
+active_intersect_df <- active_set %>%
+  rownames_to_column(var = "new_refname") %>%
+  separate(new_refname, into = c("refname", "promoter"), sep = "_(?=[^_]+$)") %>%
+  filter(!str_detect(refname, "_NA$")) %>%
+  group_by(refname, promoter) %>%
+  arrange(promoter) %>%
+  mutate(set_config = paste(undiff, diff, aicar, palm, sep = ","))
+
+active_intersect_consist <- active_intersect_df %>%
+  group_by(refname) %>%
+  reframe(unique_prom = n_distinct(promoter), .groups = "drop",
+          unique_configs = n_distinct(set_config), .groups = "drop") %>%
+  mutate(is_consistent = unique_configs == 1)
+
+active_intersect_df_consist <- active_intersect_df %>% left_join(active_intersect_consist, by = "refname")
+
+active_intersect_plot_df <- active_intersect_df_consist %>%
+  mutate(promoter_set = case_when(unique_prom == 2 & is_consistent == FALSE ~ promoter,
+                                  unique_prom == 2 & is_consistent == TRUE ~ "both",
+                                  unique_prom == 1 ~ promoter)) %>%
+  ungroup() %>%
+  select(-c(promoter, set_config, unique_configs, .groups, is_consistent))
+
+active_upset_df <- upset(active_intersect_plot_df[,c(2:5,7)], 
+                         intersect = c("undiff", "diff",
+                                       "aicar", "palm"),
+                         base_annotations=list(
+                           'Intersection Size' = intersection_size(
+                             counts = FALSE,
+                             mapping = aes(linetype = promoter_set),
+                             text = list(size = 5)
+                           )
+                         ),
+                         plot_names,
+                         queries = list(
+                           upset_query(set = "palm", fill = "#1982c4"),
+                           upset_query(set = "aicar", fill = "#8ac926"),
+                           upset_query(set = "diff", fill = "#ffca3a"),
+                           upset_query(set = "undiff", fill = "#ff595e")
+                         ),
+                         themes = upset_default_themes(
+                           text = element_text(family = "Helvetica", size = 15)
+                         ),
+                         sort_sets = 'descending'
 )
-dev.off()
 
-###############################################
-### mpralm - Activity (Is an oligo active?) ###
-###############################################
+# df for all fragments per condition bars
+# - # fragments active per condition, promoter
+active_set_df <- active_set %>%
+  rownames_to_column(var = "new_refname") %>%
+  separate(new_refname, into = c("refname", "promoter"), sep = "_(?=[^_]+$)") %>%
+  filter(!str_detect(refname, "_NA$")) %>%
+  pivot_longer(!c(refname, promoter)) %>%
+  group_by(refname, name) %>%
+  reframe(refname = refname,
+          promoter = paste(promoter, collapse = ","),
+          value = paste(value, collapse = ",")) %>%
+  filter(!(value %in% c("FALSE", "FALSE,FALSE"))) %>%
+  ungroup() %>%
+  distinct(.keep_all = TRUE) %>%
+  mutate(promoter_set = case_when(
+    promoter == "SCP1" & value == "TRUE" ~ "SCP1",
+    promoter == "MYBPC2" & value == "TRUE" ~ "MYBPC2",
+    promoter == "SCP1,MYBPC2" & value == "TRUE,TRUE" ~ "both",
+    promoter == "SCP1,MYBPC2" & value == "TRUE,FALSE" ~ "SCP1",
+    promoter == "SCP1,MYBPC2" & value == "FALSE,TRUE" ~ "MYBPC2",
+    promoter == "MYBPC2,SCP1" & value == "TRUE,TRUE" ~ "both",
+    promoter == "MYBPC2,SCP1" & value == "TRUE,FALSE" ~ "MYBPC2",
+    promoter == "MYBPC2,SCP1" & value == "FALSE,TRUE" ~ "SCP1"))
 
-filt_cts_scp <- filt_cts %>%
-  dplyr::filter(prom == "SCP1")
+# df for set size
+active_set_tot <- active_set_df %>%
+  group_by(promoter_set, name) %>%
+  summarise(total = n_distinct(refname), .groups = "drop") %>%
+  dplyr::rename(condition = name)
 
-# Separate input DNA and RNA for mpralm formatting purposes
-in_dna <- filt_cts_scp %>%
-  mutate(new_refname = paste(refname, prom, sep = "_")) %>%
-  dplyr::select(starts_with("dna"), new_refname) %>%
-  column_to_rownames(var = "new_refname")
+active_set_totals <- active_set_tot %>%
+  group_by(condition) %>%
+  reframe(label = sum(total))
 
-in_rna <- filt_cts_scp %>%
-  mutate(new_refname = paste(refname, prom, sep = "_")) %>%
-  dplyr::select(starts_with("rna"), new_refname) %>%
-  column_to_rownames(var = "new_refname")
-
-colnames(in_dna) <- colnames(in_rna) <- paste0("sample", seq(1,16,by=1))
-
-# Perform activity analysis - basal undiff group
-mpraset_undiff <- MPRASet(DNA = in_dna[,c(1:4)], RNA = in_rna[,c(1:4)], eid = row.names(in_dna))
-design <- model.matrix(~1, data=data.frame(sample=paste0("sample", 1:4)))
-undiff_fit_scp <- mpralm(object=mpraset_undiff, design=design, aggregate="none",
-                         model_type="indep_groups", plot=TRUE)
-
-tr_undiff_scp <- treat(undiff_fit_scp)
-active_res_undiff_scp <- topTreat(tr_undiff_scp, coef=1, number = Inf) %>%
-  rownames_to_column(var = "new_refname")
-
-write.table(active_res_undiff_scp, file.path(out_dir, "active-res-undiff-scp.tsv"),
-            sep = "\t", quote = F)
-# diff group
-mpraset_diff <- MPRASet(DNA = in_dna[,c(5:8)], RNA = in_rna[,c(5:8)], eid = row.names(in_dna))
-diff_fit_scp <- mpralm(object=mpraset_diff, design=design, aggregate="none",
-                       model_type="indep_groups", plot=TRUE)
-
-tr_diff_scp <- treat(diff_fit_scp)
-active_res_diff_scp <- topTreat(tr_diff_scp, coef=1, number = Inf) %>%
-  rownames_to_column(var = "new_refname")
-
-write.table(active_res_diff_scp, file.path(out_dir, "active-res-diff-scp.tsv"),
-            sep = "\t", quote = F)
-# AICAR group
-mpraset_aicar <- MPRASet(DNA = in_dna[,c(9:12)], RNA = in_rna[,c(9:12)], eid = row.names(in_dna))
-aicar_fit_scp <- mpralm(object=mpraset_aicar, design=design, aggregate="none",
-                        model_type="indep_groups", plot=TRUE)
-
-tr_aicar_scp <- treat(aicar_fit_scp)
-active_res_aicar_scp <- topTreat(tr_aicar_scp, coef=1, number = Inf) %>%
-  rownames_to_column(var = "new_refname")
-
-write.table(active_res_aicar_scp, file.path(out_dir, "active-res-aicar_scp.tsv"),
-            sep = "\t", quote = F)
-# AICAR group
-mpraset_palm <- MPRASet(DNA = in_dna[,c(13:16)], RNA = in_rna[,c(13:16)], eid = row.names(in_dna))
-palm_fit_scp <- mpralm(object=mpraset_palm, design=design, aggregate="none",
-                       model_type="indep_groups", plot=TRUE)
-
-tr_palm_scp <- treat(palm_fit_scp)
-active_res_palm_scp <- topTreat(tr_palm_scp, coef=1, number = Inf) %>%
-  rownames_to_column(var = "new_refname")
-
-write.table(active_res_palm_scp, file.path(out_dir, "active-res-palm_scp.tsv"),
-            sep = "\t", quote = F)
-
-# Filter to active (FDR < 0.05) oligos
-lm_active_undiff_scp = filtActive(active_res_undiff_scp)
-lm_active_diff_scp = filtActive(active_res_diff_scp)
-lm_active_aicar_scp = filtActive(active_res_aicar_scp)
-lm_active_palm_scp = filtActive(active_res_palm_scp)
-
-# Filter to oligo allele pairs where at least one allele is active
-lm_pairs_undiff_scp <- processPairs(lm_active_undiff_scp)
-lm_pairs_diff_scp <- processPairs(lm_active_diff_scp)
-lm_pairs_aicar_scp <- processPairs(lm_active_aicar_scp)
-lm_pairs_palm_scp <- processPairs(lm_active_palm_scp)
-
-##################################
-### Make UpSet plot - Activity ###
-##################################
-
-# Make list of all active rsids from any group
-lm_all_active_rsid_scp = Reduce(union, list(lm_pairs_undiff_scp$new_refname,
-                                            lm_pairs_diff_scp$new_refname,
-                                            lm_pairs_aicar_scp$new_refname,
-                                            lm_pairs_palm_scp$new_refname))
-
-# Create individual boolean sets for each group
-set_active_undiff_scp = lm_all_active_rsid_scp %in% lm_pairs_undiff_scp$new_refname
-set_active_diff_scp = lm_all_active_rsid_scp %in% lm_pairs_diff_scp$new_refname
-set_active_aicar_scp = lm_all_active_rsid_scp %in% lm_pairs_aicar_scp$new_refname
-set_active_palm_scp = lm_all_active_rsid_scp %in% lm_pairs_palm_scp$new_refname
-
-# Make final boolean input df
-active_set_scp = as.data.frame(cbind(set_active_undiff_scp, set_active_diff_scp,
-                                     set_active_aicar_scp, set_active_palm_scp))
-
-
-plot_names <- colnames(active_set_scp) <- c("Undiff + Basal", "Diff + Basal",
-                                            "Diff + AICAR", "Diff + Palmitate")
-
-png(file.path(fig_dir, "upset-active-scp.png"), width = 8, height = 4.5, units = "in",
-    res = 300)
-upset(active_set_scp, plot_names, name = "Intersection",
-      themes = upset_default_themes(
-        text = element_text(family = "Helvetica", size = 15)
-      ),
-      sort_sets = 'descending',
-      base_annotations = list(
-        'Intersection size' = intersection_size(
-          text = list(size = 5)
-        )
-      )
+cond_labels <- c("Undiff. +\nBasal","Diff. +\nBasal",
+                 "Diff. +\nAICAR","Diff. +\nPalmitate"
 )
-dev.off()
+
+active_set_bar <- active_set_tot %>% mutate(condition = factor(condition,
+                                                               levels = c("undiff", "diff",
+                                                                          "aicar", "palm"))) %>%
+  ggplot(aes(x = condition, y = total, fill = condition, alpha = promoter_set)) +
+  geom_bar(stat = "identity",
+           linewidth = 0.25,
+           color = "white",
+           fill = "white",
+           width = 0.6,
+           alpha = 1) +
+  geom_bar(stat = "identity",
+           linewidth = 0.25,
+           color = "black",
+           width = 0.6) +
+  geom_text(data = active_set_totals,
+            aes(label = label, y = label + 5, x = condition),
+            inherit.aes = FALSE,
+            family = "Helvetica", vjust = 0, size = 4) +
+  scale_alpha_manual(values = c(0.33, 0.66, 1),
+                     labels = c("Both", "MYBPC2", "SCP1")) +
+  scale_fill_manual(values = c("#ff595e","#ffca3a",
+                               "#8ac926", "#1982c4")) +
+  theme_linedraw(base_family = "Helvetica", base_size = 14) +
+  theme(legend.position = c(0.8, 0.8),
+        legend.spacing.y = unit(0.3, 'lines'),
+        legend.background = element_rect(fill = "white", color = "black", linewidth = 0.25),
+        legend.key.size = unit(0.5,"line"),
+        legend.text = element_text(size = 10),
+        legend.title = element_text(size = 12),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.title.x = element_text(color = "black", size = 14),
+        panel.border = element_blank(),
+        axis.line = element_line(color = "black", linewidth = 0.5),
+        plot.margin = margin(15, 0, 0, 0, "pt")) +
+  labs(x = NULL, y = "Number of active oligos") + scale_y_continuous(expand = c(0,0)) +
+  scale_x_discrete(labels = cond_labels) + coord_cartesian(clip = "off") +
+  guides(alpha = guide_legend(byrow = TRUE, title = "Promoter", override.aes = list(label = "")),
+         fill = "none")
+
+ggsave(active_set_bar, filename = file.path(fig_dir, "active_set_bar.png"),
+       units = "in", width = 5, height = 4, dpi = 600, device = ragg::agg_png())
+
+# # of variants with at least one active allele
+active_pairs_df <- active_pairs %>%
+  rownames_to_column(var = "new_refname") %>%
+  separate(new_refname, into = c("refname", "promoter"), sep = "_(?=[^_]+$)") %>%
+  filter(!str_detect(refname, "neg_ctrl")) %>%
+  pivot_longer(!c(refname, promoter)) %>%
+  group_by(refname, name) %>%
+  reframe(refname = refname,
+          promoter = paste(promoter, collapse = ","),
+          value = paste(value, collapse = ",")) %>%
+  filter(!(value %in% c("FALSE", "FALSE,FALSE"))) %>%
+  ungroup() %>%
+  distinct(.keep_all = TRUE) %>%
+  mutate(promoter_set = case_when(
+    promoter == "SCP1" & value == "TRUE" ~ "SCP1",
+    promoter == "MYBPC2" & value == "TRUE" ~ "MYBPC2",
+    promoter == "SCP1,MYBPC2" & value == "TRUE,TRUE" ~ "both",
+    promoter == "SCP1,MYBPC2" & value == "TRUE,FALSE" ~ "SCP1",
+    promoter == "SCP1,MYBPC2" & value == "FALSE,TRUE" ~ "MYBPC2",
+    promoter == "MYBPC2,SCP1" & value == "TRUE,TRUE" ~ "both",
+    promoter == "MYBPC2,SCP1" & value == "TRUE,FALSE" ~ "MYBPC2",
+    promoter == "MYBPC2,SCP1" & value == "FALSE,TRUE" ~ "SCP1"))
+
+# df for set size
+active_pairs_tot <- active_pairs_df %>%
+  group_by(promoter_set, name) %>%
+  summarise(total = n_distinct(refname), .groups = "drop") %>%
+  dplyr::rename(condition = name)
+
+active_pairs_totals <- active_pairs_tot %>%
+  group_by(condition) %>%
+  reframe(label = sum(total))
+
+cond_labels <- c("Undiff. +\nBasal","Diff. +\nBasal",
+                 "Diff. +\nAICAR","Diff. +\nPalmitate"
+)
+
+
+active_pairs_bar <- active_pairs_tot %>%
+  mutate(condition = factor(condition,
+                            levels = c("undiff", "diff",
+                                       "aicar", "palm"))) %>%
+  ggplot(aes(x = condition, y = total, fill = condition, alpha = promoter_set)) +
+  geom_bar(stat = "identity",
+           linewidth = 0.25,
+           color = "#D3D3D3",
+           fill = "#D3D3D3",
+           width = 0.6,
+           alpha = 1) +
+  geom_bar(stat = "identity",
+           linewidth = 0.25,
+           color = "black",
+           width = 0.6) +
+  geom_text(data = active_pairs_totals,
+            aes(label = label, y = label + 3, x = condition),
+            inherit.aes = FALSE,
+            family = "Helvetica", vjust = 0, size = 4) +
+  scale_alpha_manual(values = c(0.25, 0.5, 0.75)) +
+  scale_fill_manual(values = c("#ff595e","#ffca3a",
+                               "#8ac926", "#1982c4")) +
+  theme_linedraw(base_family = "Helvetica", base_size = 14) +
+  theme(legend.position = "none",
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.title.x = element_text(color = "black", size = 14),
+        panel.border = element_blank(),
+        axis.line = element_line(color = "black", linewidth = 0.5),
+        plot.margin = margin(15, 0, 0, 0, "pt")) +
+  labs(x = NULL, y = "Number of variants with\nat least 1 active allele") + scale_y_continuous(expand = c(0,0)) +
+  scale_x_discrete(labels = cond_labels) + coord_cartesian(clip = "off")
+
+ggsave(active_pairs_bar, filename = file.path(fig_dir, "active_pairs_bar.png"),
+       units = "in", width = 5, height = 4, dpi = 600, device = ragg::agg_png())
+
+# get levels of intersections
+factor(active_upset_df[[2]]$data$intersection) # Levels: 1 1-3 2 2-1 2-1-3 2-3 3 4 4-1-3 4-2 4-2-1 4-2-1-3 4-2-3 4-3
+
+
+active_intersect_df <- as.data.frame(table(factor(active_upset_df[[2]]$data$intersection),
+                                           active_upset_df[[2]]$data$promoter_set))
+
+active_intersect_totals <- active_intersect_df %>%
+  group_by(Var1) %>%
+  summarise(total = sum(Freq))
+active_intersect_df <- active_intersect_df %>%
+  left_join(active_intersect_totals, by = "Var1")
+active_set_interbar <- active_intersect_df %>%
+  mutate(condition = case_when(Var1 == 4 ~ "undiff",
+                               Var1 == 2 ~ "diff",
+                               Var1 == 1 ~ "aicar",
+                               Var1 == 3 ~ "palm",
+                               TRUE ~ "other"),
+         condition = factor(condition, levels = c("undiff", "diff", "aicar", "palm", "other")),
+         Var1 = reorder(Var1, -Freq)) %>%
+  ggplot(aes(x = Var1, y = Freq, fill = condition, alpha = Var2)) +
+  geom_bar(stat = "identity", linewidth = 0.25, color = "white", fill = "white", alpha = 1) +
+  geom_bar(stat = "identity", linewidth = 0.25, color = "black") +
+  geom_text(aes(label = total, y = total + 3),
+            vjust = 0, size = 4, family = "Helvetica") +
+  scale_alpha_manual(values = c(0.33, 0.66, 1)) + scale_fill_manual(values = c("#ff595e", "#ffca3a",
+                                                                               "#8ac926", "#1982c4",
+                                                                               "#8E8E8E")) +
+  theme_minimal(base_family = "Helvetica", base_size = 14) +
+  theme(legend.position = "none",
+        axis.text.x = element_blank(),
+        axis.title.y = element_text(color = "black", size = 14),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        plot.margin = margin(0, 0, 0, 0, "pt")) +
+  labs(x = NULL, y = "Intersection Size")
+
+intersection_order <- levels(reorder(active_intersect_df$Var1, -active_intersect_df$Freq))
+replace_intersect <- c("1" = "aicar", "2" = "diff", "3" = "palm", "4" = "undiff")
+intersection_order <- as.factor(gsub("1", "aicar", 
+                                     gsub("2", "diff", 
+                                          gsub("3", "palm", 
+                                               gsub("4", "undiff", intersection_order)))))
+intersection_order <- factor(intersection_order, levels = intersection_order)
+
+active_set_matrix <- active_upset_df[[4]]$data %>%
+  mutate(start = str_sub(as.character(intersection), 1, 1),
+         end = str_sub(as.character(intersection), nchar(as.character(intersection)), nchar(as.character(intersection))),
+         intersection_recode = str_replace_all(intersection, replace_intersect),
+         condition = case_when(intersection_recode == "undiff" ~ "undiff",
+                               intersection_recode == "diff" ~ "diff",
+                               intersection_recode == "aicar" ~ "aicar",
+                               intersection_recode == "palm" ~ "palm",
+                               TRUE ~ "other"),
+         condition = factor(condition, levels = c("undiff", "diff", "aicar", "palm", "other")),
+         group = str_replace_all(group, replace_intersect),
+         group = factor(group, levels = c("palm", "aicar", "diff", "undiff")),
+         start = str_replace_all(start, replace_intersect),
+         end = str_replace_all(end, replace_intersect),
+         intersection_recode = factor(intersection_recode, levels = intersection_order)) %>%
+  ggplot(aes(x = intersection_recode, y = group, fill = condition,
+             size = value)) +
+  geom_point(fill = "#E4E4E2", color = "#C0C0C0", size = 4, pch = 21, stroke = 0.5) +
+  geom_segment(aes(x = intersection_recode, xend = intersection_recode, y = start, yend = end),
+               linewidth = 0.75) +
+  geom_point(aes(stroke = value * 0.75), pch = 21) + scale_fill_manual(values = c("#ff595e", "#ffca3a",
+                                                                                  "#8ac926", "#1982c4",
+                                                                                  "#000000")) +
+  scale_size_manual(values = c(0, 5)) + theme_minimal(base_family = "Helvetica", base_size = 14) +
+  theme(legend.position = "none",
+        axis.text.x = element_blank(),
+        axis.text.y = element_text(color = "black"),
+        axis.title.x = element_text(color = "black", size = 14),
+        plot.margin = margin(0, 0, 0, 0, "pt")) +
+  labs(x = "Intersection", y = NULL) + scale_y_discrete(labels = c("Diff. + Palmitate","Diff. + AICAR",
+                                                                   "Diff. + Basal", "Undiff. + Basal"))
+
+design <- "
+11
+22
+"
+active_upset_plot <- free(active_set_interbar, type = "space", side = "l") + active_set_matrix + plot_layout(design = design)
+active_bar_plots <- free(active_set_bar, type = "space", side = "l") + active_pairs_bar + plot_layout(design = design)
+
+# save as pdf and add annotations to small intersections
+ggsave(active_upset_plot, filename = file.path(fig_dir, "active_upset.pdf"),
+       units = "in", width = 6, height = 6, dpi = 600)
+ggsave(active_bar_plots, filename = file.path(fig_dir, "active_bars.png"),
+       units = "in", width = 4, height = 6, dpi = 600)
 
 
 ########################
@@ -756,7 +819,7 @@ allele_res_undiff <- topTable(undiff_fit_allele, coef = 2, number = Inf) %>%
   rownames_to_column(var = "new_refname")
 
 write.table(allele_res_undiff, file.path(out_dir, "allele-res-undiff.tsv"),
-            sep = "\t", quote = F)
+            sep = "\t", quote = F, row.names = F)
 
 # prep for mpralm - diff
 in_dna_diff <- in_dna_allelic %>%
@@ -790,7 +853,7 @@ allele_res_diff <- topTable(diff_fit_allele, coef = 2, number = Inf) %>%
   rownames_to_column(var = "new_refname")
 
 write.table(allele_res_diff, file.path(out_dir, "allele-res-diff.tsv"),
-            sep = "\t", quote = F)
+            sep = "\t", quote = F, row.names = F)
 
 # prep for mpralm - aicar
 in_dna_aicar <- in_dna_allelic %>%
@@ -824,7 +887,7 @@ allele_res_aicar <- topTable(aicar_fit_allele, coef = 2, number = Inf) %>%
   rownames_to_column(var = "new_refname")
 
 write.table(allele_res_aicar, file.path(out_dir, "allele-res-aicar.tsv"),
-            sep = "\t", quote = F)
+            sep = "\t", quote = F, row.names = F)
 
 # prep for mpralm - palm
 in_dna_palm <- in_dna_allelic %>%
@@ -858,7 +921,7 @@ allele_res_palm <- topTable(palm_fit_allele, coef = 2, number = Inf) %>%
   rownames_to_column(var = "new_refname")
 
 write.table(allele_res_palm, file.path(out_dir, "allele-res-palm.tsv"),
-            sep = "\t", quote = F)
+            sep = "\t", quote = F, row.names = F)
 
 #################################
 ### Make UpSet plot - Allelic ###
@@ -912,39 +975,283 @@ palm_rsid_set = rsid_allele_set %in% rsid_allele_palm
 
 allelic_set = as.data.frame(cbind(undiff_rsid_set, diff_rsid_set,
                                   aicar_rsid_set,palm_rsid_set))
+rownames(allelic_set) <- rsid_allele_set
+colnames(allelic_set) <- c("undiff","diff","aicar","palm")
 
-colnames(allelic_set) <- plot_names
+# also make set w logfc
+rsid_lfc_undiff <- lm_allele_undiff %>%
+  mutate(new_refname = paste(refname, prom, sep = "_")) %>%
+  filter(new_refname %in% rsid_allele_set) %>%
+  select(new_refname, logFC)
+rsid_lfc_diff <- lm_allele_diff %>%
+  mutate(new_refname = paste(refname, prom, sep = "_")) %>%
+  filter(new_refname %in% rsid_allele_set) %>%
+  select(new_refname, logFC)
+rsid_lfc_aicar <- lm_allele_aicar %>%
+  mutate(new_refname = paste(refname, prom, sep = "_")) %>%
+  filter(new_refname %in% rsid_allele_set) %>%
+  select(new_refname, logFC)
+rsid_lfc_palm <- lm_allele_palm %>%
+  mutate(new_refname = paste(refname, prom, sep = "_")) %>%
+  filter(new_refname %in% rsid_allele_set) %>%
+  select(new_refname, logFC)
 
-png(file.path(fig_dir, "upset-allelic.png"),
-    width = 8, height = 4.5, units = "in",res = 300)
-upset(allelic_set, plot_names, name = "Intersection",
-      queries = list(
-        upset_query(intersect = "Diff + Palmitate", color = "#1982c4", fill = "#1982c4"),
-        upset_query(intersect = "Diff + AICAR", color = "#8ac926", fill = "#8ac926"),
-        upset_query(intersect = "Diff + Basal", color = "#ffca3a", fill = "#ffca3a"),
-        upset_query(intersect = "Undiff + Basal", color = "#ff595e", fill = "#ff595e"),
-        upset_query(set = "Diff + Palmitate", fill = "#1982c4"),
-        upset_query(set = "Diff + AICAR", fill = "#8ac926"),
-        upset_query(set = "Diff + Basal", fill = "#ffca3a"),
-        upset_query(set = "Undiff + Basal", fill = "#ff595e")
-      ),
-      themes = upset_default_themes(
-        text = element_text(family = "Helvetica", size = 15)
-      ),
-      sort_sets = 'descending',
-      base_annotations = list(
-        'Intersection size' = intersection_size(
-          text = list(size = 5)
-        )
-      )
+lfc_set <- allelic_set %>%
+  rownames_to_column(var = "new_refname") %>%
+  full_join(rsid_lfc_undiff) %>%
+  rename(undiff_lfc = logFC) %>%
+  full_join(rsid_lfc_diff) %>%
+  rename(diff_lfc = logFC) %>%
+  full_join(rsid_lfc_aicar) %>%
+  rename(aicar_lfc = logFC) %>%
+  full_join(rsid_lfc_palm) %>%
+  rename(palm_lfc = logFC) %>%
+  rowwise() %>%
+  mutate(consistent = case_when(
+    all(c_across(undiff_lfc:palm_lfc) < 0, na.rm = TRUE) ~ TRUE,
+    all(c_across(undiff_lfc:palm_lfc) > 0, na.rm = TRUE) ~ TRUE,
+    TRUE ~ FALSE)
+  ) %>%
+  ungroup()
+
+binom_res <- lfc_set %>%
+  summarise(
+    consistent_count = sum(consistent, na.rm = TRUE),
+    total_count = n()
+  ) %>%
+  mutate(
+    binomial_test = list(rstatix::binom_test(consistent_count, total_count, p = 0.5))
+  ) %>%
+  unnest_wider(binomial_test)
+
+
+write.table(lfc_set, file.path(out_dir, "lfc_allele_comparison.tsv"),
+                               sep = "\t", quote = F, row.names = F)
+
+allelic_set_df <- allelic_set %>%
+  rownames_to_column(var = "new_refname") %>%
+  separate(new_refname, into = c("refname", "promoter"), sep = "_(?=[^_]+$)") %>%
+  pivot_longer(!c(refname, promoter)) %>%
+  group_by(refname, name) %>%
+  reframe(refname = refname,
+          promoter = paste(promoter, collapse = ","),
+          value = paste(value, collapse = ",")) %>%
+  filter(!(value %in% c("FALSE", "FALSE,FALSE"))) %>%
+  ungroup() %>%
+  distinct(.keep_all = TRUE) %>%
+  mutate(promoter_set = case_when(
+    promoter == "SCP1" & value == "TRUE" ~ "SCP1",
+    promoter == "MYBPC2" & value == "TRUE" ~ "MYBPC2",
+    promoter == "SCP1,MYBPC2" & value == "TRUE,TRUE" ~ "both",
+    promoter == "SCP1,MYBPC2" & value == "TRUE,FALSE" ~ "SCP1",
+    promoter == "SCP1,MYBPC2" & value == "FALSE,TRUE" ~ "MYBPC2",
+    promoter == "MYBPC2,SCP1" & value == "TRUE,TRUE" ~ "both",
+    promoter == "MYBPC2,SCP1" & value == "TRUE,FALSE" ~ "MYBPC2",
+    promoter == "MYBPC2,SCP1" & value == "FALSE,TRUE" ~ "SCP1"))
+
+allelic_intersect_df <- allelic_set %>%
+  rownames_to_column(var = "new_refname") %>%
+  separate(new_refname, into = c("refname", "promoter"), sep = "_(?=[^_]+$)") %>%
+  filter(!str_detect(refname, "_NA$")) %>%
+  group_by(refname, promoter) %>%
+  arrange(promoter) %>%
+  mutate(set_config = paste(undiff, diff, aicar, palm, sep = ","))
+
+allelic_intersect_consist <- allelic_intersect_df %>%
+  group_by(refname) %>%
+  reframe(unique_prom = n_distinct(promoter), .groups = "drop",
+          unique_configs = n_distinct(set_config), .groups = "drop") %>%
+  mutate(is_consistent = unique_configs == 1)
+
+allelic_intersect_df_consist <- allelic_intersect_df %>% left_join(allelic_intersect_consist, by = "refname")
+
+allelic_intersect_plot_df <- allelic_intersect_df_consist %>%
+  mutate(promoter_set = case_when(unique_prom == 2 & is_consistent == FALSE ~ promoter,
+                                  unique_prom == 2 & is_consistent == TRUE ~ "both",
+                                  unique_prom == 1 ~ promoter)) %>%
+  ungroup() %>%
+  select(-c(promoter, set_config, unique_configs, .groups, is_consistent))
+
+
+allelic_upset_df <- upset(allelic_intersect_plot_df[,c(2:5,7)], 
+                         intersect = c("undiff", "diff",
+                                       "aicar", "palm"),
+                         base_annotations=list(
+                           'Intersection Size' = intersection_size(
+                             counts = FALSE,
+                             mapping = aes(linetype = promoter_set),
+                             text = list(size = 5)
+                           )
+                         ),
+                         plot_names,
+                         queries = list(
+                           upset_query(set = "palm", fill = "#1982c4"),
+                           upset_query(set = "aicar", fill = "#8ac926"),
+                           upset_query(set = "diff", fill = "#ffca3a"),
+                           upset_query(set = "undiff", fill = "#ff595e")
+                         ),
+                         themes = upset_default_themes(
+                           text = element_text(family = "Helvetica", size = 15)
+                         ),
+                         sort_sets = 'descending'
 )
-dev.off()
+
+allelic_set_tot <- allelic_set_df %>%
+  group_by(promoter_set, name) %>%
+  summarise(total = n_distinct(refname), .groups = "drop") %>%
+  dplyr::rename(condition = name)
+
+allelic_set_totals <- allelic_set_tot %>%
+  group_by(condition) %>%
+  summarise(label = sum(total))
+allelic_set_bar <- allelic_set_tot %>% mutate(condition = factor(condition,
+                                                                     levels = c("undiff", "diff",
+                                                                                "aicar", "palm"))) %>%
+  ggplot(aes(x = condition, y = total, fill = condition, alpha = promoter_set)) +
+  geom_bar(stat = "identity",
+           linewidth = 0.25,
+           color = "white",
+           fill = "white",
+           width = 0.6,
+           alpha = 1) +
+  geom_bar(stat = "identity",
+           linewidth = 0.25,
+           color = "black",
+           width = 0.6) +
+  geom_text(data = allelic_set_totals,
+            aes(label = label, y = label + 4, x = condition),
+            inherit.aes = FALSE,
+            family = "Helvetica", vjust = 0, size = 4) +
+  scale_alpha_manual(values = c(0.33, 0.66, 1),
+                     labels = c("Both", "MYBPC2", "SCP1")) +
+  scale_fill_manual(values = c("#ff595e","#ffca3a",
+                               "#8ac926", "#1982c4")) +
+  theme_linedraw(base_family = "Helvetica", base_size = 14) +
+  theme(legend.position = c(0.8, 0.85),
+        legend.spacing.y = unit(0.3, 'lines'),
+        legend.background = element_rect(fill = "white", color = "black", linewidth = 0.25),
+        legend.key.size = unit(0.5,"line"),
+        legend.text = element_text(size = 10),
+        legend.title = element_text(size = 12),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.title.x = element_text(color = "black", size = 14),
+        panel.border = element_blank(),
+        axis.line = element_line(color = "black", linewidth = 0.5),
+        plot.margin = margin(20, 0, 0, 0, "pt")) +
+  labs(x = NULL, y = "Number of variants with allelic bias") + scale_y_continuous(expand = c(0,0)) +
+  scale_x_discrete(labels = cond_labels) + coord_cartesian(clip = "off") +
+  guides(alpha = guide_legend(byrow = TRUE, title = "Promoter", override.aes = list(label = "")),
+         fill = "none")
+
+ggsave(allelic_set_bar, filename = file.path(fig_dir, "allelic_set_bar.png"),
+       units = "in", width = 5, height = 4, dpi = 600, device = ragg::agg_png())
+
+
+# get levels of intersections
+factor(allelic_upset_df[[2]]$data$intersection) # Levels: 1 1-3 2 2-1 2-1-3 2-3 3 4 4-1 4-1-3 4-2 4-2-1 4-2-1-3 4-2-3 4-3
+
+
+allelic_intersect_df <- as.data.frame(table(factor(allelic_upset_df[[2]]$data$intersection),
+                                            allelic_upset_df[[2]]$data$promoter_set))
+
+allelic_intersect_totals <- allelic_intersect_df %>%
+  group_by(Var1) %>%
+  summarise(total = sum(Freq))
+allelic_intersect_df <- allelic_intersect_df %>%
+  left_join(allelic_intersect_totals, by = "Var1")
+allelic_set_interbar <- allelic_intersect_df %>%
+  mutate(condition = case_when(Var1 == 4 ~ "undiff",
+                               Var1 == 2 ~ "diff",
+                               Var1 == 1 ~ "aicar",
+                               Var1 == 3 ~ "palm",
+                               TRUE ~ "other"),
+         condition = factor(condition, levels = c("undiff", "diff", "aicar", "palm", "other")),
+         Var1 = reorder(Var1, -Freq)) %>%
+  ggplot(aes(x = Var1, y = Freq, fill = condition, alpha = Var2)) +
+  geom_bar(stat = "identity", linewidth = 0.25, color = "white", fill = "white", alpha = 1) +
+  geom_bar(stat = "identity", linewidth = 0.25, color = "black") +
+  geom_text(aes(label = total, y = total + 3),
+            vjust = 0, size = 4, family = "Helvetica") +
+  scale_alpha_manual(values = c(0.33, 0.66, 1),
+                     labels = c("Both", "MYBPC2", "SCP1")) + scale_fill_manual(values = c("#ff595e", "#ffca3a",
+                                                                                          "#8ac926", "#1982c4",
+                                                                                          "#8E8E8E")) +
+  theme_minimal(base_family = "Helvetica", base_size = 14) +
+  theme(legend.position = c(0.85, 0.75),
+        legend.spacing.y = unit(0.3, 'lines'),
+        legend.background = element_rect(fill = "white", color = "black", linewidth = 0.25),
+        legend.key.size = unit(0.5,"line"),
+        legend.text = element_text(size = 10),
+        legend.title = element_text(size = 12),
+        axis.text.x = element_blank(),
+        axis.title.y = element_text(color = "black", size = 14),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        plot.margin = margin(0, 0, 0, 0, "pt")) +
+  labs(x = NULL, y = "Intersection Size") +
+  guides(alpha = guide_legend(byrow = TRUE, title = "Promoter", override.aes = list(label = "")),
+         fill = "none")
+
+intersection_order <- levels(reorder(allelic_intersect_df$Var1, -allelic_intersect_df$Freq))
+replace_intersect <- c("1" = "aicar", "2" = "diff", "3" = "palm", "4" = "undiff")
+intersection_order <- as.factor(gsub("1", "aicar", 
+                                     gsub("2", "diff", 
+                                          gsub("3", "palm", 
+                                               gsub("4", "undiff", intersection_order)))))
+intersection_order <- factor(intersection_order, levels = intersection_order)
+
+allelic_set_matrix <- allelic_upset_df[[4]]$data %>%
+  mutate(start = str_sub(as.character(intersection), 1, 1),
+         end = str_sub(as.character(intersection), nchar(as.character(intersection)), nchar(as.character(intersection))),
+         intersection_recode = str_replace_all(intersection, replace_intersect),
+         condition = case_when(intersection_recode == "undiff" ~ "undiff",
+                               intersection_recode == "diff" ~ "diff",
+                               intersection_recode == "aicar" ~ "aicar",
+                               intersection_recode == "palm" ~ "palm",
+                               TRUE ~ "other"),
+         condition = factor(condition, levels = c("undiff", "diff", "aicar", "palm", "other")),
+         group = str_replace_all(group, replace_intersect),
+         group = factor(group, levels = c("palm", "aicar", "diff", "undiff")),
+         start = str_replace_all(start, replace_intersect),
+         end = str_replace_all(end, replace_intersect),
+         intersection_recode = factor(intersection_recode, levels = intersection_order)) %>%
+  ggplot(aes(x = intersection_recode, y = group, fill = condition,
+             size = value)) +
+  geom_point(fill = "#E4E4E2", color = "#C0C0C0", size = 4, pch = 21, stroke = 0.5) +
+  geom_segment(aes(x = intersection_recode, xend = intersection_recode, y = start, yend = end),
+               linewidth = 0.75) +
+  geom_point(aes(stroke = value * 0.75), pch = 21) + scale_fill_manual(values = c("#ff595e", "#ffca3a",
+                                                                                  "#8ac926", "#1982c4",
+                                                                                  "#000000")) +
+  scale_size_manual(values = c(0, 5)) + theme_minimal(base_family = "Helvetica", base_size = 14) +
+  theme(legend.position = "none",
+        axis.text.x = element_blank(),
+        axis.text.y = element_text(color = "black"),
+        axis.title.x = element_text(color = "black", size = 14),
+        plot.margin = margin(0, 0, 0, 0, "pt")) +
+  labs(x = "Intersection", y = NULL) + scale_y_discrete(labels = c("Diff. + Palmitate","Diff. + AICAR",
+                                                                   "Diff. + Basal", "Undiff. + Basal"))
+
+design <- "
+11
+11
+11
+22
+22
+"
+
+allelic_upset_plot <- free(allelic_set_interbar, type = "space", side = "l") + allelic_set_matrix + plot_layout(design = design)
+
+# save as pdf and add annotations to small intersections
+ggsave(allelic_upset_plot, filename = file.path(fig_dir, "allelic_upset.pdf"),
+       units = "in", width = 6, height = 6, dpi = 600)
+
 
 ############################
 ### Single var plot fxns ###
 ############################
-
-#rs34003091
 
 # Function to manipulate dfs for p-val testing and plotting
 make_rsid_df <- function(neg_ids, ref_ids, plot_prom, df) {
@@ -1048,19 +1355,6 @@ make_rsid_plot <- function(test_df, pval_df, rsid, allele_labels, condition_colo
 ### Plot vars ###
 #################
 
-# options: rs181704186_chr1_159752293_A_G_R
-# rs11419307_chr7_99520455_TTTTTTTTTT_TTTTTTTTTTT_R
-
-rs114_out <- make_rsid_df(neg_ids = c("NA_chr11_116619500_NA_NA_NA",
-                                      "NA_chr10_72885496_NA_NA_NA"),
-                          ref_ids = c("rs11419307_chr7_99520455_TTTTTTTTTT_TTTTTTTTTTT_R",
-                                      "rs11419307_chr7_99520455_TTTTTTTTTT_TTTTTTTTTTT_A"),
-                          plot_prom = "MYBPC2", df = plot_tpm)
-
-rs114_out$pval_df <- rs114_out$pval_df %>%
-  mutate(y.position = c(2, 2.25, 2.5, 2.25, 2.5, 2.75,
-                        1.75, 2, 2.25, 1.75, 2, 2.25))
-
 condition_colors <- c("#ff595e","#ffca3a",
                       "#8ac926","#1982c4")
 condition_labeller <- c(
@@ -1070,372 +1364,160 @@ condition_labeller <- c(
   palm = "Diff. +\nPalmitate"
 )
 
-rs114_plot <- make_rsid_plot(test_df = rs114_out$test_df,
-                             pval_df = rs114_out$pval_df,
-                             rsid = "rs11419307",
-                             allele_labels = c("Neg. Ctrl","Ref (T)10", "Alt (T)11"),
+rs118_out <- make_rsid_df(neg_ids = c("NA_chr5_116670618_NA_NA_NA"),
+                          ref_ids = c("rs11867290_chr17_62791047_T_G_A",
+                                      "rs11867290_chr17_62791047_T_G_R"),
+                          plot_prom = "MYBPC2", df = plot_tpm)
+
+rs118_out$pval_df <- rs118_out$pval_df %>%
+  mutate(y.position = c(0.6, 0.75, 1, 1.15, 1.3, 1.45,
+                        1.15, 1.3, 1.45, 1.15, 1.3, 1.45))
+
+rs118_plot <- make_rsid_plot(test_df = rs118_out$test_df,
+                             pval_df = rs118_out$pval_df,
+                             rsid = "rs11867290",
+                             allele_labels = c("Neg. Ctrl","Ref (T)", "Alt (G)"),
                              condition_colors, condition_labeller) +
-  scale_y_continuous(limits = c(-0.85, 2.85))
+  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1)) +
+  scale_y_continuous(limits = c(-0.25, 1.5)) + labs(y = bquote(log[2]~"(RNA/DNA), " ~ .("rs11867290-MYBPC2")))
 
-rs114_plot
-ggsave(rs114_plot, filename = file.path(fig_dir, "rs11419307-plot.png"),
-       units = "in", dpi = 600, width = 10, height = 4.5)
+rs118_plot
+ggsave(rs118_plot, filename = file.path(fig_dir, "rs11867290-plot.png"),
+       units = "in", dpi = 600, width = 7.2, height = 5.5)
 
+rs340_out <- make_rsid_df(neg_ids = c("NA_chr5_116670618_NA_NA_NA"),
+                          ref_ids = c("rs34003091_chr19_58150887_T_C_R",
+                                      "rs34003091_chr19_58150887_T_C_A"),
+                          plot_prom = "MYBPC2", df = plot_tpm)
 
-rs181_out <- make_rsid_df(neg_ids = c("NA_chr11_116619500_NA_NA_NA"),
-                          ref_ids = c("rs181704186_chr1_159752293_A_G_R",
-                                      "rs181704186_chr1_159752293_A_G_A"),
-                          plot_prom = "SCP1", df = plot_tpm)
+rs340_out$pval_df <- rs340_out$pval_df %>%
+  mutate(y.position = c(1.65, 1.85, 2.05, 1, 1.2, 1.4,
+                        0.9, 1.1, 1.3, 0.9, 1.1, 1.3))
 
-rs181_out$pval_df <- rs181_out$pval_df %>%
-  mutate(y.position = c(1.15, 1.4, 1.65, 0.25, 0.5, 0.75,
-                        0.25, 0.5, 0.75, 0.25, 0.5, 0.75))
-
-rs181_plot <- make_rsid_plot(test_df = rs181_out$test_df,
-                             pval_df = rs181_out$pval_df,
-                             rsid = "rs181704186",
-                             allele_labels = c("Neg. Ctrl","Ref (A)", "Alt (G)"),
+rs340_plot <- make_rsid_plot(test_df = rs340_out$test_df,
+                             pval_df = rs340_out$pval_df,
+                             rsid = "rs34003091",
+                             allele_labels = c("Neg. Ctrl","Ref (T)", "Alt (C)"),
                              condition_colors, condition_labeller) +
-  scale_y_continuous(limits = c(-0.9, 1.75))
+  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1)) +
+  scale_y_continuous(limits = c(-0.25, 2.1)) + labs(y = bquote(log[2]~"(RNA/DNA), " ~ .("rs34003091-MYBPC2")))
 
-rs181_plot
-ggsave(rs181_plot, filename = file.path(fig_dir, "rs181704186-plot.png"),
-       units = "in", dpi = 600, width = 10, height = 4.5)
+rs340_plot
+ggsave(rs340_plot, filename = file.path(fig_dir, "rs34003091-plot.png"),
+       units = "in", dpi = 600, width = 7.2, height = 5.5)
 
-rs381_out <- make_rsid_df(neg_ids = "NA_chr10_72885496_NA_NA_NA",
-                          ref_ids = c("rs3810155_chr19_10654191_C_G_R",
-                                      "rs3810155_chr19_10654191_C_G_A"),
-                          plot_prom = "SCP1", df = plot_tpm)
-
-rs381_out$pval_df <- rs381_out$pval_df %>%
-  mutate(y.position = c(2.25, 2.5, 2.75, 1.2, 1.45, 1.7,
-                        0.4, 0.65, 0.9, 0.85, 1.1, 1.35))
-
-rs381_plot <- make_rsid_plot(test_df = rs381_out$test_df,
-                             pval_df = rs381_out$pval_df,
-                             rsid = "rs3810155",
-                             allele_labels = c("Neg. Ctrl","Ref (C)", "Alt (G)"),
-                             condition_colors, condition_labeller) +
-  scale_y_continuous(limits = c(-0.25, 2.8))
-
-rs381_plot
-ggsave(rs381_plot, filename = file.path(fig_dir, "rs3810155-plot.png"),
-       units = "in", dpi = 600, width = 10, height = 4.5)
-
-rs490_out <- make_rsid_df(neg_ids = "NA_chr10_72885496_NA_NA_NA",
+rs490_out <- make_rsid_df(neg_ids = "NA_chr15_74506364_NA_NA_NA",
                           ref_ids = c("rs490972_chr11_66312315_G_A_A",
                                       "rs490972_chr11_66312315_G_A_R"),
                           plot_prom = "SCP1", df = plot_tpm)
 
 rs490_out$pval_df <- rs490_out$pval_df %>%
   mutate(y.position = c(0.825, 0.95, 1.075, 0.25, 0.375, 0.5,
-                        0.25, 0.375, 0.5, 0.19, 0.315, 0.44))
+                        0.2, 0.325, 0.475, 0.1, 0.225, 0.375))
 
 rs490_plot <- make_rsid_plot(test_df = rs490_out$test_df,
                              pval_df = rs490_out$pval_df,
                              rsid = "rs490972",
                              allele_labels = c("Neg. Ctrl","Ref (G)", "Alt (A)"),
                              condition_colors, condition_labeller) +
-  scale_y_continuous(limits = c(-0.55, 1.1))
+  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1)) +
+  scale_y_continuous(limits = c(-0.55, 1.1)) + labs(y = bquote(log[2]~"(RNA/DNA), " ~ .("rs490972-SCP1")))
+
 
 rs490_plot
 ggsave(rs490_plot, filename = file.path(fig_dir, "rs490972-plot.png"),
-       units = "in", dpi = 600, width = 10, height = 4.5)
+       units = "in", dpi = 600, width = 9.6, height = 5)
 write.table(rs490_out$test_df, file.path(out_dir, "rs490972_test-df.tsv"), sep = "\t", quote = F, row.names = F)
 
-rs313_out <- make_rsid_df(neg_ids = "NA_chr10_72885496_NA_NA_NA",
-                          ref_ids = c("rs3130288_chr6_32128224_C_A_A",
-                                      "rs3130288_chr6_32128224_C_A_R"),
-                          plot_prom = "MYBPC2", df = plot_tpm)
 
-rs381_out$pval_df <- rs381_out$pval_df %>%
-  mutate(y.position = c(2.25, 2.5, 2.75, 1.2, 1.45, 1.7,
-                        0.4, 0.65, 0.9, 0.85, 1.1, 1.35))
+#################
+### ISGU data ###
+#################
 
-rs313_plot <- make_rsid_plot(test_df = rs313_out$test_df,
-                             pval_df = rs313_out$pval_df,
-                             rsid = "rs3130288",
-                             allele_labels = c("Neg. Ctrl","Ref (C)", "Alt (A)"),
-                             condition_colors, condition_labeller)
-
-rs313_plot
-ggsave(rs381_plot, filename = file.path(fig_dir, "rs3810155-plot.png"),
-       units = "in", dpi = 600, width = 10, height = 4.5)
-write.table(rs381_out$test_df, file.path(out_dir, "rs3810155_test-df.tsv"), sep = "\t", quote = F, row.names = F)
-
-rs468_out <- make_rsid_df(neg_ids = "NA_chr10_72885496_NA_NA_NA",
-                          ref_ids = c("rs4689391_chr4_6278722_G_A_A",
-                                      "rs4689391_chr4_6278722_G_A_R"),
-                          plot_prom = "MYBPC2", df = plot_tpm)
-
-rs468_out$pval_df <- rs468_out$pval_df %>%
-  mutate(y.position = c(2.25, 2.5, 2.75, 1.2, 1.45, 1.7,
-                        0.4, 0.65, 0.9, 0.85, 1.1, 1.35))
-
-rs468_plot <- make_rsid_plot(test_df = rs468_out$test_df,
-                             pval_df = rs468_out$pval_df,
-                             rsid = "rs4689391",
-                             allele_labels = c("Neg. Ctrl","Ref (G)", "Alt (A)"),
-                             condition_colors, condition_labeller)
-
-+
-  scale_y_continuous(limits = c(-0.25, 2.8))
-
-rs381_plot
-ggsave(rs381_plot, filename = "20241119_rs3810155-plot.png",
-       units = "in", dpi = 600, width = 10, height = 4.5)
+formatted_isgu <- read.csv("/lab/work/knishino/20240731_lhcn-isgu/20240731_formatted-lhcn-isgu-aggregate-names-updated.csv")
+background_isgu <- read.csv("/lab/work/knishino/20240731_lhcn-isgu/20240731_formatted-lhcn-isgu - background_wells_not_adjacent.csv")
 
 
-###################################
-### compare effects across prom ###
-###################################
+formatted_isgu <- formatted_isgu %>%
+  rename(sample = Sample, condition = Condition, insulin = Insulin,
+         thirty = X30min, sixty = X60min, ninety = X90min, onetwenty = X120min) %>%
+  pivot_longer(!c(sample, condition, insulin)) 
 
-compare_basal <- active_res_undiff_myb %>%
-  rownames_to_column(var = "refname") %>%
-  extract(refname, into = c("refname", "prom"), "(.*)_([^_]+)$") %>%
-  inner_join(
-    active_res_undiff_scp %>%
-      rownames_to_column(var = "refname") %>%
-      extract(refname, into = c("refname", "prom"), "(.*)_([^_]+)$"),
-    by = "refname"
-  ) %>%
-  mutate(signed_pval_myb = case_when(logFC.x < 0 ~ -adj.P.Val.x,
-                                     TRUE ~ adj.P.Val.x),
-         signed_pval_scp = case_when(logFC.y < 0 ~ - adj.P.Val.y,
-                                     TRUE ~ adj.P.Val.y))
-compare_basal %>%
-  filter(abs(signed_pval_scp) < 0.5 & abs(signed_pval_myb) < 0.5) %>%
-  ggplot(aes(x = signed_pval_scp, y = signed_pval_myb)) +
-  geom_point()
+background_isgu <- background_isgu %>%
+  rename(thirty = X30min, sixty = X60min, ninety = X90min, onetwenty = X120min) %>%
+  pivot_longer(thirty:onetwenty) %>%
+  group_by(name) %>%
+  summarize(avg_background = mean(value))
 
-########################
-### Motif enrichment ###
-########################
+normalized_isgu <- formatted_isgu %>%
+  left_join(background_isgu, by = "name") %>%
+  filter(!(sample %in% c("ATS0666","ATS0673"))) %>%
+  mutate(norm_value = value - avg_background,
+         condition = case_when(condition == "basal" ~ "diff",
+                               condition == "AICAR" ~ "aicar",
+                               condition == "palmitate" ~ "palm",
+                               TRUE ~ condition),
+         condition = factor(condition, levels = c("undiff", "diff",
+                                                  "aicar","palm")))
 
-options(meme_bin = "/lab/sw/modules/meme/5.0.4/bin")
+pval_df_ins <- normalized_isgu %>% filter(name == "sixty") %>% group_by(condition) %>%
+  rstatix::t_test(norm_value ~ insulin) %>%
+  rstatix::add_xy_position(x = "condition", dodge = 0.75) %>%
+  mutate(p.format = case_when(p < 0.005 ~ paste0("p = ", scientific(p, digits = 3)),
+                              TRUE ~ paste0("p = ", p)),
+         y.position = c(2.2e6,
+                        8.1e6,
+                        7.8e6,
+                        7e6))
 
-# Activity sets 
-get_active_seq <- function(df, df_null, genome) {
-  
-  active_coord <- df %>%
-    separate(refname, into = c("rsid", "chr", "pos")) %>%
-    distinct(rsid, .keep_all = TRUE) %>%
-    dplyr::filter(rsid != "NA") %>%
-    mutate(start = as.numeric(pos) - 100,
-           stop = as.numeric(pos) + 99) %>%
-    distinct(chr, start, stop, .keep_all = TRUE)
-  
-  active_coord_gr <- makeGRangesFromDataFrame(active_coord)
-  
-  nonact_coord <- df_null %>%
-    separate(refname, into = c("rsid", "chr", "pos")) %>%
-    distinct(rsid, .keep_all = TRUE) %>%
-    dplyr::filter(rsid != "NA") %>%
-    mutate(start = as.numeric(pos) - 100,
-           stop = as.numeric(pos) + 99) %>%
-    distinct(chr, start, stop, .keep_all = TRUE)
-  
-  nonact_coord_gr <- makeGRangesFromDataFrame(nonact_coord)
-  
-  active_seq <- active_coord_gr %>%
-    get_sequence(genome)
-  
-  nonactive_seq = nonact_coord_gr %>%
-    get_sequence(genome)
-  
-  return(list(active_seq = active_seq,
-              nonactive_seq = nonactive_seq))
-  
-}
+pval_df_cond <- normalized_isgu %>% filter(name == "sixty" & insulin == FALSE) %>%
+  rstatix::t_test(norm_value ~ condition) %>%
+  rstatix::add_xy_position(x = "condition", dodge = 0.75) %>%
+  mutate(p.format = case_when(p < 0.005 ~ paste0("p = ", scientific(p, digits = 3)),
+                              TRUE ~ paste0("p = ", p)))
+pval_df_cond <- pval_df_cond[c(1:3),] %>%
+  mutate(y.position = c(2.75e6,3.25e6,3.75e6))
 
-hg.genome <- BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38
-jaspar_path <- file.path(in_dir, "jaspar.meme")
-
-undiff_active_seq <- get_active_seq(lm_active_undiff, lm_nonact_undiff, hg.genome)
-undiff_active_enrich <- runAme(undiff_active_seq$active_seq,
-                               control = "shuffle",
-                               database = jaspar_path,
-                               outdir = file.path(out_dir, "meme_active/undiff"))
-
-diff_active_seq <- get_active_seq(lm_active_diff, lm_notact_diff, hg.genome)
-diff_active_enrich <- runAme(diff_active_seq$active_seq,
-                             control = "shuffle",
-                             database = jaspar_path,
-                             outdir = file.path(out_dir, "meme_active/diff"))
-
-aicar_active_seq <- get_active_seq(lm_active_aicar, lm_nonact_aicar, hg.genome)
-aicar_active_enrich <- runAme(aicar_active_seq$active_seq,
-                              control = "shuffle",
-                              database = jaspar_path,
-                              outdir = file.path(out_dir, "meme_active/aicar"))
-
-palm_active_seq <- get_active_seq(lm_active_palm, lm_nonact_palm, hg.genome)
-palm_active_enrich <- runAme(palm_active_seq$active_seq,
-                             control = "shuffle",
-                             database = jaspar_path,
-                             outdir = file.path(out_dir, "meme_active/palm"))
-
-# # Allelic sets
-# get_allelic_seq <- function(df, df_null, allelic_info, genome) {
-#   
-#   allelic_coord <- merge(df, allelic_info, by = "refname")
-#   
-#   allelic_coord <- allelic_coord %>%
-#     distinct(rsid, .keep_all = TRUE) %>%
-#     dplyr::filter(rsid != "NA") %>%
-#     mutate(start = as.numeric(pos) - 100,
-#            stop = as.numeric(pos) + 99) %>%
-#     distinct(chr, start, stop, .keep_all = TRUE)
-#   
-#   allelic_coord_gr <- makeGRangesFromDataFrame(allelic_coord)
-#   
-#   nonall_coord <- merge(df_null, allelic_info, by = "refname")
-#   
-#   nonall_coord <- nonall_coord %>%
-#     distinct(rsid, .keep_all = TRUE) %>%
-#     dplyr::filter(rsid != "NA") %>%
-#     mutate(start = as.numeric(pos) - 100,
-#            stop = as.numeric(pos) + 99) %>%
-#     distinct(chr, start, stop, .keep_all = TRUE)
-#   
-#   nonall_coord_gr <- makeGRangesFromDataFrame(nonall_coord)
-#   
-#   allelic_seq <- allelic_coord_gr %>%
-#     get_sequence(genome)
-#   
-#   nonallelic_seq = nonall_coord_gr %>%
-#     get_sequence(genome)
-#   
-#   return(list(allelic_seq = allelic_seq,
-#               nonallelic_seq = nonallelic_seq))
-#   
-# }
-# 
-# undiff_allelic_seq <- get_allelic_seq(lm_allele_undiff, lm_nonall_undiff, allelic_info, hg.genome)
-# undiff_allelic_enrich <- runAme(undiff_allelic_seq$allelic_seq,
-#                                control = "shuffle",
-#                                database = jaspar_path,
-#                                outdir = file.path(out_dir, "meme_allelic/undiff"))
-# 
-# diff_allelic_seq <- get_allelic_seq(lm_allele_diff, lm_nonall_diff, allelic_info, hg.genome)
-# diff_allelic_enrich <- runAme(diff_allelic_seq$allelic_seq,
-#                              control = "shuffle",
-#                              database = jaspar_path,
-#                              outdir = file.path(out_dir, "meme_allelic/diff"))
-# 
-# aicar_allelic_seq <- get_allelic_seq(lm_allele_aicar, lm_nonall_aicar, allelic_info, hg.genome)
-# aicar_allelic_enrich <- runAme(aicar_allelic_seq$allelic_seq,
-#                               control = "shuffle",
-#                               database = jaspar_path,
-#                               outdir = file.path(out_dir, "meme_allelic/aicar"))
-# 
-# palm_allelic_seq <- get_allelic_seq(lm_allele_palm, lm_nonall_palm, allelic_info, hg.genome)
-# palm_allelic_enrich <- runAme(palm_allelic_seq$allelic_seq,
-#                              control = "shuffle",
-#                              database = jaspar_path,
-#                              outdir = file.path(out_dir, "meme_allelic/palm"))
-
-###########################
-### Plot enrichment res ###
-###########################
-
-filter_fp <- function(df) {
-  filtered <- df %>%
-    filter(!(tp < 2 *fp))
-  return(filtered)
-}
-
-undiff_active_enrich_jaspar_filt <- filter_fp(undiff_active_enrich_jaspar)
-diff_active_enrich_jaspar_filt <- filter_fp(diff_active_enrich_jaspar)
-aicar_active_enrich_jaspar_filt <- filter_fp(aicar_active_enrich_jaspar)
-palm_active_enrich_jaspar_filt <- filter_fp(palm_active_enrich_jaspar)
-
-colnames(basal_diff_filtered)[8] <- "motif_id"
-colnames(aicar_filtered)[8] <- "motif_id"
-colnames(palm_filtered)[8] <- "motif_id"
-
-all_active_motifs <- data.frame(c(undiff_active_enrich_jaspar_filt$motif_id,
-                                  diff_active_enrich_jaspar_filt$motif_id,
-                                  aicar_active_enrich_jaspar_filt$motif_id,
-                                  palm_active_enrich_jaspar_filt$motif_id))
-
-undiff_active_enrich_jaspar_filt_summary <- undiff_active_enrich_jaspar_filt %>%
-  mutate(log_pval = -log10(pvalue)) %>%
-  arrange(desc(log_pval)) %>%
-  mutate(label = ifelse(grepl("ZNF", motif_id) | grepl("SP9", motif_id) | grepl("SP3", motif_id),
-                        motif_id, paste0("**", motif_id, "**"))) %>%
-  mutate(condition = "Undifferentiated")
-undiff_active_enrich_jaspar_filt_summary$label <- as.factor(undiff_active_enrich_jaspar_filt_summary$label)
-undiff_active_enrich_jaspar_filt_summary$label <- fct_reorder(undiff_active_enrich_jaspar_filt_summary$label,
-                                                              undiff_active_enrich_jaspar_filt_summary$pvalue)
-
-
-diff_active_enrich_jaspar_filt_summary <- diff_active_enrich_jaspar_filt %>%
-  mutate(log_pval = -log10(pvalue)) %>%
-  arrange(desc(log_pval)) %>%
-  mutate(label = ifelse(grepl("ZNF", motif_id) | grepl("SP9", motif_id) | grepl("SP3", motif_id),
-                        motif_id, paste0("**", motif_id, "**"))) %>%
-  mutate(condition = "Differentiated")
-diff_active_enrich_jaspar_filt_summary$label <- as.factor(diff_active_enrich_jaspar_filt_summary$label)
-diff_active_enrich_jaspar_filt_summary$label <- fct_reorder(diff_active_enrich_jaspar_filt_summary$label,
-                                                            diff_active_enrich_jaspar_filt_summary$pvalue)
-
-aicar_active_enrich_jaspar_filt_summary <- aicar_active_enrich_jaspar_filt %>%
-  mutate(log_pval = -log10(pvalue)) %>%
-  arrange(desc(log_pval)) %>%
-  mutate(label = ifelse(grepl("ZNF", motif_id),
-                        motif_id, paste0("**", motif_id, "**"))) %>%
-  mutate(condition = "AICAR")
-aicar_active_enrich_jaspar_filt_summary$label <- as.factor(aicar_active_enrich_jaspar_filt_summary$label)
-aicar_active_enrich_jaspar_filt_summary$label <- fct_reorder(aicar_active_enrich_jaspar_filt_summary$label,
-                                                             aicar_active_enrich_jaspar_filt_summary$pvalue)
-
-palm_active_enrich_jaspar_filt_summary <- palm_active_enrich_jaspar_filt %>%
-  mutate(log_pval = -log10(pvalue)) %>%
-  arrange(desc(log_pval)) %>%
-  mutate(label = ifelse(grepl("ZNF", motif_id),
-                        motif_id, paste0("**", motif_id, "**")))%>%
-  mutate(condition = "Palmitate")
-palm_active_enrich_jaspar_filt_summary$label <- as.factor(palm_active_enrich_jaspar_filt_summary$label)
-palm_active_enrich_jaspar_filt_summary$label <- fct_reorder(palm_active_enrich_jaspar_filt_summary$label,
-                                                            palm_active_enrich_jaspar_filt_summary$pvalue)
-
-# create facet plots
-full_active_jaspar_results <- rbind(undiff_active_enrich_jaspar_filt_summary,
-                                    diff_active_enrich_jaspar_filt_summary,
-                                    aicar_active_enrich_jaspar_filt_summary,
-                                    palm_active_enrich_jaspar_filt_summary)
-
-full_active_jaspar_results$condition <- factor(full_active_jaspar_results$condition,
-levels = c("Undifferentiated", "Differentiated", "AICAR", "Palmitate"))
-facet_colors <- c("Undifferentiated" = "#ff595e", "Differentiated" = "#ffca3a",
-                  "AICAR" = "#8ac926", "Palmitate" = "#1982c4")
-
-strip_colors <- strip_themed(background_x = elem_list_rect(fill = c("#ff595e","#ffca3a","#8ac926","#1982c4")))
-condition_labels <- c("Undifferentiated" = "Undifferentiated", "Differentiated" = "Differentiated",
-                      "AICAR" = "AICAR", "Palmitate" = "Palmitate")
-
-active_enrich_jaspar_filt_plot <- ggplot(full_active_jaspar_results, aes(x = label, y = log_pval)) +
-  geom_point(aes(color = tp, fill = tp), size = 4, shape = 21) +
-  scale_x_discrete(labels = full_active_jaspar_results$label) +
-  geom_point(data = subset(full_active_jaspar_results, adj.pvalue < 0.1),
-             aes(x = label, y = log_pval, fill = tp, color = tp),
-             size = 4, shape = 21, color = "black", stroke = 1) +
-  scale_color_gradientn(colors = c("purple4", "orangered", "yellow1")) +
-  scale_fill_gradientn(colors = c("purple4", "orangered", "yellow1")) +
-  facet_wrap2(. ~ condition, labeller = labeller(condition = condition_labels),
-              strip = strip_colors, ncol = 2, scales = "free_x") +
-  labs(x = "Transcription Factor Motif", y = "-log10(p-value)",
-       color = "Number of Variants", fill = "Number of Variants") +
+norm_isgu_plot <- normalized_isgu %>%
+  filter(name == "sixty") %>%
+  ggplot(aes(x = condition, y = norm_value)) +
+  geom_boxplot(aes(fill = condition, group = interaction(insulin, condition)), outlier.shape = NA,
+               position = position_dodge()) +
+  geom_point(aes(shape = insulin),
+             color = "black", fill = "white", size = 3, stroke = 0.5,
+             position = position_jitterdodge()) +
+  labs(x = NULL, y = "Relative Light Units (RLU)") +
+  scale_x_discrete(labels = condition_labeller) +
   theme_bw(base_family = "Helvetica", base_size = 16) +
-  theme(axis.text.x = element_markdown(angle = 90, hjust = 1, size = 12),
-        strip.background = element_rect(color = NA),
-        panel.border = element_blank()) +
-  coord_cartesian(clip = "off") +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) + expand_limits(y = c(-0.1, 23))
+  theme(legend.position = c(0.15, 0.85),
+        legend.spacing.y = unit(0.3, 'lines'),
+        legend.background = element_rect(fill = "white", color = "black", linewidth = 0.25),
+        legend.key.size = unit(0.5,"line"),
+        legend.text = element_text(size = 10),
+        legend.title = element_text(size = 12),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 14),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 14)) +
+  scale_fill_manual(values = condition_colors) +
+  scale_shape_manual(values = c(21,19),
+                     labels = c("- insulin",
+                                "+ insulin"),
+                     name = "Stimulation") +
+  scale_y_continuous(limits = c(0, 8.5e6),
+                     labels = c(0, expression(paste("2 x ", 10^6)),
+                                expression(paste("4 x ", 10^6)),
+                                expression(paste("6 x ", 10^6)),
+                                expression(paste("8 x ", 10^6)))) +
+  stat_pvalue_manual(
+    pval_df_ins, label = "p.format", tip.length = 0.01,
+    family = "Helvetica", size = 4.5
+  ) +
+  stat_pvalue_manual(
+    pval_df_cond, label = "p.format", tip.length = 0.01,
+    family = "Helvetica", size = 4.5
+  ) +
+  guides(fill="none")
 
-active_enrich_jaspar_filt_plot
-
-ggsave(active_enrich_jaspar_filt_plot,
-       filename = file.path(fig_dir, "motif_dotplot.png"),
-       units = "in", dpi = 600, width = 9, height = 5.4, device = ragg::agg_png())
+ggsave(norm_isgu_plot, filename = file.path(fig_dir, "norm-isgu-plot.png"),
+       units = "in", dpi = 600, width = 7, height = 5)

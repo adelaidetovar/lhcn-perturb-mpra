@@ -7,7 +7,7 @@ librarian::shelf(tidyverse, biomaRt, ggtext, patchwork, GGally,
                  ggrepel, apeglm, ComplexHeatmap, EnhancedVolcano,
                  RColorBrewer, DESeq2, limma, gprofiler2, rrvgo,
                  AnnotationDbi, ggh4x, org.Hs.eg.db, circlize, scales,
-                 ggseqlogo, universalmotif, patchwork)
+                 ggseqlogo, universalmotif, patchwork, rstatix, ggpubr)
 
 in_dir <- file.path("/path/to/nf-res/rnaseq")
 
@@ -44,9 +44,9 @@ add_diff_col <- function(table) {
   # add a column of NAs
   table$diffexpressed <- "NO"
   # if log2Foldchange > 1 and pvalue < 0.05, set as "UP" 
-  table$diffexpressed[table$beta > 1 & table$padj < 0.05] <- "UP"
+  table$diffexpressed[table$log2FoldChange > 1 & table$padj < 0.05] <- "UP"
   # if log2Foldchange < -1 and pvalue < 0.05, set as "DOWN"
-  table$diffexpressed[table$beta < -1 & table$padj < 0.05] <- "DOWN"
+  table$diffexpressed[table$log2FoldChange < -1 & table$padj < 0.05] <- "DOWN"
   return(table)
 }
 
@@ -161,10 +161,10 @@ pca_res_df <- data.frame(
 pct_var_pca <- round(100 * (pca_res$sdev^2 / sum(pca_res$sdev^2)), digits = 2)
 
 
-pca_res_df$label <- c("Undifferentiated\n+ Basal", rep(NA, 6),
-                      "Differentiated\n+ Basal", NA,
-                      "Differentiated\n+ AICAR", NA,
-                      "Differentiated\n+ Palmitate",rep(NA, 3))
+pca_res_df$label <- c("Undifferentiated +\nBasal", rep(NA, 6),
+                      "Differentiated +\nBasal", NA,
+                      "Differentiated +\nAICAR", NA,
+                      "Differentiated +\nPalmitate",rep(NA, 3))
 pca_res_df$color <- c(rep("#ff595e",4),rep("#ffca3a",4),rep("#8ac926",3), rep("#1982c4", 4))
 pca_res_df$status <- c(rep("undiff",4),rep("diff",11))
 rna_pca <- ggplot(pca_res_df, aes(PC1, PC2, color = condition, label=label, shape=status)) +
@@ -185,10 +185,10 @@ rna_pca <- ggplot(pca_res_df, aes(PC1, PC2, color = condition, label=label, shap
   geom_text_repel(min.segment.length = 0, family = "Helvetica",
                   box.padding = 1.5, nudge_x = 1, size = 5, lineheight = 1,
                   data = pca_res_df[c(12:15),], color = "black") +
-  theme_bw(base_family = "Helvetica", base_size = 16) + theme(aspect.ratio = 1, legend.position="none")
+  theme_bw(base_family = "Helvetica", base_size = 16) + theme(legend.position="none")
 
 ggsave(rna_pca, filename = file.path(fig_dir, "rnaseq-pca.png"),
-       units = "in", height = 5, width = 5, dpi = 600, device = ragg::agg_png())
+       units = "in", height = 4, width = 4.67, dpi = 600, device = ragg::agg_png())
 
 #####################################
 ### DE analysis - undiff vs. diff ###
@@ -292,8 +292,12 @@ cond_annot <- HeatmapAnnotation(
                                    lty = "blank"),
                          labels = c("Undifferentiated + Basal",
                                     "Differentiated + Basal"),
-                         labels_gp = gpar(fontsize = 10, fontfamily = "Helvetica"))
+                         labels_gp = gpar(fontsize = 12, fontfamily = "Helvetica", col = "white"))
 )
+
+my_palette <- rev(brewer.pal(11, "RdBu"))
+
+uvd_breaks <- seq(-2.23, 2.12, length.out = length(my_palette))
 
 # Plot heatmap
 uvd_heatmap <- Heatmap(uvd_mat_norm,
@@ -306,13 +310,14 @@ uvd_heatmap <- Heatmap(uvd_mat_norm,
                        column_order = rev(1:8),
                        column_split = uvd_groups,
                        column_title = NULL,
+                       col = colorRamp2(diff_breaks, my_palette),
                        heatmap_legend_param = list(
                          title = "Norm. expr."
                        )
 )
 
 png(file.path(fig_dir, "uvd_heatmap.png"), units = "in",
-    width = 6, height = 5.5, res = 600)
+    width = 5.6, height = 4, res = 600)
 uvd_heatmap
 dev.off()
 
@@ -609,23 +614,23 @@ basal_path_plot <- basal_pathways %>%
   geom_bar(stat = "identity") +
   facet_wrap2(vars(group), scales = "free_y", ncol = 1,
               strip = strip, labeller = labeller(group = basal_labs)) +
-  theme_linedraw(base_family = "Helvetica", base_size = 12) + labs(y = NULL, x = expression("-log"[10]~"(p-val)")) +
+  theme_linedraw(base_family = "Helvetica", base_size = 12) + labs(y = NULL, x = expression("-log"[10]~"(adjusted p-value)")) +
   theme(strip.background = element_rect(color = NA),
-        strip.text = element_text(color = "black"),
-        axis.ticks.y = element_blank(),
+        strip.text = element_text(color = "white"),
         axis.ticks.x = element_blank(),
         panel.border = element_blank(),
         panel.grid.major.y = element_blank(),
         panel.grid.major.x = element_line(linewidth = 0.1),
         panel.grid.minor.x = element_line(linewidth = 0.1),
         axis.text = element_text(color = "black"),
-        axis.text.y = element_text(lineheight = 0.6)) +
+        axis.text.y = element_text(lineheight = 0.6),
+        aspect.ratio = 0.8) +
   scale_y_discrete(labels = label_wrap(35)) +
   scale_x_continuous(breaks = seq(0,50,by=10), labels = seq(0,50,by=10)) +
-  geom_vline(xintercept = -log10(0.05), linetype = "dashed", color = "white")
+  geom_vline(xintercept = -log10(0.05), color = "black", linewidth = 0.75)
 
-ggsave(basal_path_plot, filename = "basal_pathways_plot.png", units = "in",
-       width = 6, height = 5, dpi = 600)
+ggsave(basal_path_plot, filename = file.path(fig_dir, "basal_pathways_plot.png"), units = "in",
+       width = 4.25, height = 5, dpi = 600)
 
 #########################################
 ### Pathway analysis - diff vs. aicar ###
@@ -771,23 +776,23 @@ aicar_path_plot <- aicar_pathways %>%
   geom_bar(stat = "identity") +
   facet_wrap2(vars(group), scales = "free_y", ncol = 1,
               strip = strip, labeller = labeller(group = aicar_labs)) +
-  theme_linedraw(base_family = "Helvetica", base_size = 12) + labs(y = NULL, x = expression("-log"[10]~"(p-val)")) +
+  theme_linedraw(base_family = "Helvetica", base_size = 12) + labs(y = NULL, x = expression("-log"[10]~"(adjusted p-value)")) +
   theme(strip.background = element_rect(color = NA),
-        strip.text = element_text(color = "black"),
-        axis.ticks.y = element_blank(),
+        strip.text = element_text(color = "white"),
         axis.ticks.x = element_blank(),
         panel.border = element_blank(),
         panel.grid.major.y = element_blank(),
         panel.grid.major.x = element_line(linewidth = 0.1),
         panel.grid.minor.x = element_blank(),
         axis.text = element_text(color = "black"),
-        axis.text.y = element_text(lineheight = 0.6)) +
+        axis.text.y = element_text(lineheight = 0.6),
+        aspect.ratio = 0.8) +
   scale_y_discrete(labels = label_wrap(35)) +
   scale_x_continuous(breaks = seq(0,50,by=5), labels = seq(0,50,by=5)) +
-  geom_vline(xintercept = -log10(0.05), linetype = "dashed", color = "white")
+  geom_vline(xintercept = -log10(0.05), color = "black", linewidth = 0.75)
 
-ggsave(aicar_path_plot, filename = "aicar_pathways_plot.png", units = "in",
-       width = 6, height = 5, dpi = 600)
+ggsave(aicar_path_plot, filename = file.path(fig_dir, "aicar_pathways_plot.png"), units = "in",
+       width = 4.25, height = 5, dpi = 600)
 
 #########################################
 ### Pathway analysis - undiff vs diff ###
@@ -934,24 +939,24 @@ palm_path_plot <- palm_pathways %>%
   geom_bar(stat = "identity") +
   facet_wrap2(vars(group), scales = "free_y", ncol = 1,
               strip = strip, labeller = labeller(group = palm_labs)) +
-  theme_linedraw(base_family = "Helvetica", base_size = 12) + labs(y = NULL, x = expression("-log"[10]~"(p-val)")) +
+  theme_linedraw(base_family = "Helvetica", base_size = 12) + labs(y = NULL, x = expression("-log"[10]~"(adjusted p-value)")) +
   theme(strip.background = element_rect(color = NA),
-        strip.text = element_text(color = "black"),
-        axis.ticks.y = element_blank(),
+        strip.text = element_text(color = "white"),
         axis.ticks.x = element_blank(),
         panel.border = element_blank(),
         panel.grid.major.y = element_blank(),
         panel.grid.major.x = element_line(linewidth = 0.1),
         panel.grid.minor.x = element_line(linewidth = 0.1),
         axis.text = element_text(color = "black"),
-        axis.text.y = element_text(lineheight = 0.6)) +
+        axis.text.y = element_text(lineheight = 0.6),
+        aspect.ratio = 0.8) +
   scale_y_discrete(labels = label_wrap(35)) +
   scale_x_continuous(breaks = seq(0,40,by=10), labels = seq(0,40,by=10)) +
-  geom_vline(xintercept = -log10(0.05), linetype = "dashed", color = "white")
+  geom_vline(xintercept = -log10(0.05), color = "black", linewidth = 0.75)
 
 
 ggsave(palm_path_plot, filename = file.path(fig_dir, "palm_pathways_plot.png"), units = "in",
-       width = 6, height = 5, dpi = 600)
+       width = 4.25, height = 5, dpi = 600)
 
 #####################
 ### Joint heatmap ###
@@ -976,8 +981,10 @@ diff_annot <- HeatmapAnnotation(
                          labels = c("Differentiated + Basal",
                                     "Diff. + AICAR",
                                     "Differentiated + Palmitate"),
-                         labels_gp = gpar(fontsize = 10, fontfamily = "Helvetica"))
+                         labels_gp = gpar(fontsize = 12, fontfamily = "Helvetica", col = "white"))
 )
+
+diff_breaks <- seq(-2.78, 2.89, length.out = length(my_palette))
 
 # Plot heatmap
 diff_heatmap <- Heatmap(diff_mat_norm,
@@ -989,14 +996,16 @@ diff_heatmap <- Heatmap(diff_mat_norm,
                         show_row_dend = FALSE,
                         column_order = rev(1:11),
                         column_split = diff_groups,
+                        col = colorRamp2(diff_breaks, my_palette),
                         column_title = NULL,
+                        use_raster = FALSE,
                         heatmap_legend_param = list(
                           title = "Norm. expr."
                         )
 )
 
 png(file.path(fig_dir, "diff_heatmap.png"), units = "in",
-    width = 6, height = 5.5, res = 600)
+    width = 6.5, height = 4, res = 600)
 diff_heatmap
 dev.off()
 
@@ -1168,13 +1177,13 @@ ggsave(sp4_logo, filename = file.path(fig_dir, "sp4_logo.png"),
 
 logo_plot <- sp4_logo / sp1_logo
 ggsave(logo_plot, filename = file.path(fig_dir, "sp_logo.png"),
-       units = "in", width = 3.5, height = 3.5, res = 600, device = ragg::agg_png)
+       units = "in", width = 4, height = 4.28, res = 600, device = ragg::agg_png)
 
 undiff_motif_df <- vst_df %>%
   filter(hgnc_symbol %in% c("KLF3", "RFX2", "KLF6",
                             "RREB1", "SP8", "RFX5",
                             "JUND", "SP4", "SP1",
-                            "HSF2", "SLC44A2", "KRI1"))
+                            "HSF2"))
 
 undiff_mat <- as.matrix(undiff_motif_df[,c(2:16)])
 undiff_mat <- as_tibble(t(scale(t(undiff_mat)))) %>%
@@ -1193,17 +1202,26 @@ undiff_mat <- as_tibble(t(scale(t(undiff_mat)))) %>%
                                             "RFX5", "JUND", "SP4",
                                             "SP1", "HSF2"))))
 
-undiff_labels <- c("Undifferentiated + Basal", "Differentiated + Basal",
-                   "Differentiated + AICAR", "Differentiated + Palmitate")
+undiff_labels <- c("Undifferentiated +\nBasal", "Differentiated +\nBasal",
+                   "Differentiated +\nAICAR", "Differentiated +\nPalmitate")
 names(undiff_labels) <- c("undiff", "diff", "aicar", "palm")
+
+rect_annot_df <- undiff_mat %>%
+  group_by(cond) %>%
+  summarize(
+    xmin = 0.5,
+    xmax = n()/9,
+    ymin = 1.5,
+    ymax = 3.5
+  )
 
 undiff_heatmap <- ggplot(data = undiff_mat, mapping = aes(x = rep,
                                                           y = gene,
                                                           fill = value)) +
   geom_tile() +
-  facet_wrap(.~cond, nrow = 1,
+  facet_grid(.~cond, space = "free_x",
              labeller = labeller(cond = undiff_labels),
-             strip.position = "bottom") +
+             switch = "x") +
   xlab(label = "Sample") +
   scale_fill_gradientn(colors = c("#075AFF",
                                   "#FFFFFF",
@@ -1223,10 +1241,16 @@ undiff_heatmap <- ggplot(data = undiff_mat, mapping = aes(x = rep,
         strip.background = element_rect(color = NA),
         strip.text = element_text(color = "black"),
         panel.spacing = unit(0.1, "lines")) +
-  annotate('rect', xmin = 0.5, xmax = 4.5, ymin = 1.5, ymax = 3.5, alpha = .1, col='black', fill=NA)
+  geom_rect(data = rect_annot_df,
+            aes(xmin = xmin,
+                xmax = xmax + 0.5,
+                ymin = ymin,
+                ymax = ymax
+                ),
+            inherit.aes = FALSE, color = "black", fill = NA)
 
 ggsave(undiff_heatmap, filename = file.path(fig_dir, "undiff_heatmap.png"),
-       units = "in", width = 7, height = 3.15, res = 600, device = ragg::agg_png)
+       units = "in", width = 7, height = 4.2, res = 600, device = ragg::agg_png)
 
 # pairwise corr between expression of SP1, SP4 and activity at rs490972 ref allele
 rs490_df <- read.delim("/path/to/workdir/mpra/output/rs490972_test-df.tsv")
@@ -1284,8 +1308,8 @@ sp_cor_plot <- rs490_df %>%
   scale_fill_manual(values = c("#ff595e","#ffca3a","#8ac926","#1982c4"),
                     labels = c("Undiff", "Diff", "AICAR", "Palmitate"),
                     name = "Condition") +
-  theme_bw(base_size = 12, base_family = "Helvetica") + labs(x = "VST-normalized counts",
-                                                             y = parse(text = "log[2]~(RNA/DNA) * ', rs490972-G'")) +
+  theme_bw(base_size = 12, base_family = "Helvetica") + labs(x = "VST-normalized gene expression",
+                                                             y = parse(text = "'rs490972-G MPRA activity, ' * log[2]~(RNA/DNA)")) +
   theme(strip.text = element_text(face = "bold.italic", size = 12, family = "Helvetica"),
         strip.background = element_rect(linewidth=0.5),
         axis.title = element_text(family = "Helvetica")) +
@@ -1295,7 +1319,7 @@ sp_cor_plot <- rs490_df %>%
             inherit.aes = FALSE, parse = TRUE, hjust = 0, family = "Helvetica")
 
 ggsave(sp_cor_plot, filename = file.path(fig_dir, "sp_cor_plot.png"),
-       units = "in", height = 4.25, width = 4.25, dpi = 600, device = ragg::agg_png())
+       units = "in", height = 4.54, width = 4.25, dpi = 600, device = ragg::agg_png())
 
 
 # pairwise corr between expression of RREB1 and activity at rs3810155?
