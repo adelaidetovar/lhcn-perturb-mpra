@@ -214,7 +214,7 @@ dds_basal <- DESeq(dds_basal)
 resultsNames(dds_basal) # [1] "Intercept"                 "diff_state_diff_vs_undiff"
 
 # set up contrasts to return DE results tables
-contrast_diff_state <- c("diff_state", "undiff", "diff")
+contrast_diff_state <- c("diff_state", "diff", "undiff") # corrected previous error here that flipped the contrast
 res_table_diff_state <- results(dds_basal,
                                 contrast=contrast_diff_state)
 res_table_diff_state <- ens_to_gen(res_table_diff_state)
@@ -345,8 +345,8 @@ dds_diff <- DESeq(dds_diff)
 resultsNames(dds_diff) # [1] "Intercept"                "condition_aicar_vs_basal" "condition_palm_vs_basal"
 
 # set up contrasts to return DE results tables
-contrast_aicar_state <- c("condition", "basal", "aicar")
-contrast_palm_state <- c("condition", "basal", "palm")
+contrast_aicar_state <- c("condition", "aicar", "basal")  # corrected previous error here that flipped the contrast
+contrast_palm_state <- c("condition", "palm", "basal")  # corrected previous error here that flipped the contrast
 
 res_table_aicar_state <- results(dds_diff,
                                  contrast=contrast_aicar_state)
